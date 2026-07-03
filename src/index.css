@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-forest-950: #0e2a21;
+  --color-forest-900: #15392e;
+  --color-forest-800: #1d4a3b;
+  --color-forest-700: #275c49;
+  --color-sage-600: #2f6e51;
+  --color-sage-500: #3f8862;
+  --color-sage-400: #6aab82;
+  --color-sage-100: #e1eade;
+  --color-gold-600: #a9802f;
+  --color-gold-500: #c89b3c;
+  --color-gold-100: #f3e6c4;
+  --color-cream-50: #f6f3ea;
+  --color-cream-100: #efe9d8;
+  --color-clay-700: #7a1e14;
+  --color-clay-100: #f4ddd8;
+
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-cream-50);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-mono-id {
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #c4baa3;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* html5-qrcode menyisipkan <video> ke dalam div target secara dinamis.
+   Ukuran/crop video diatur langsung di CameraScanModal.jsx lewat
+   Tailwind arbitrary selector ([&>video]:w-full dst) supaya video selalu
+   mengisi penuh container persegi (aspect-square) tanpa distorsi, baik
+   untuk webcam laptop (rasio asli 16:9) maupun kamera HP. border-radius
+   di sini cukup sebagai fallback kalau class di komponen tidak ke-load. */
+#camera-scan-region video {
+  border-radius: 0.75rem;
+}
+
+/* Leaflet popup restyle to match palette */
+.leaflet-popup-content-wrapper {
+  background: #15392e;
+  color: #f6f3ea;
+  border-radius: 12px;
+}
+.leaflet-popup-tip {
+  background: #15392e;
+}
+.leaflet-container a.leaflet-popup-close-button {
+  color: #f6f3ea;
+}
