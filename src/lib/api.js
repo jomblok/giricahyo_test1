@@ -5,7 +5,7 @@
 //   2. Authorization header otomatis disertakan
 //   3. Error response otomatis di-throw sebagai object { message }
 
-const BASE = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000/api";
 
 // Ambil token dari localStorage
 function getToken() {
