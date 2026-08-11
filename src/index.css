@@ -30,6 +30,12 @@ body {
   background-color: var(--color-cream-50);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+html.dark body {
+  background-color: var(--color-forest-950);
+  color: var(--color-cream-50);
 }
 
 .font-mono-id {

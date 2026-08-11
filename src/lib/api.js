@@ -23,10 +23,13 @@ export function clearToken() {
 // ── Core fetch wrapper ────────────────────────────────────────────────────────
 async function request(method, path, body = null) {
   const token = getToken();
-  const headers = { "Content-Type": "application/json" };
+  const headers = { 
+    "Content-Type": "application/json",
+    "Accept": "application/json"
+  };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch(`${BASE}${path}`, {
+  const res = await fetch(`${BASE_URL}${path}`, {
     method,
     headers,
     body: body ? JSON.stringify(body) : null,
@@ -39,10 +42,32 @@ async function request(method, path, body = null) {
     return;
   }
 
-  const data = await res.json();
+  let data;
+  const contentType = res.headers.get("content-type");
+  if (contentType && contentType.includes("application/json")) {
+    data = await res.json();
+  } else {
+    const text = await res.text();
+    if (!res.ok) {
+      if (res.status === 404) {
+        throw new Error(`Pohon dengan ID "${path.split("/").pop()}" tidak ditemukan di database.`);
+      }
+      throw new Error(`Respon server non-JSON (${res.status}): ${text.substring(0, 80)}`);
+    }
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = { message: text };
+    }
+  }
 
   if (!res.ok) {
-    const error = new Error(data?.message || "Terjadi kesalahan pada server.");
+    let msg = data?.message || `Terjadi kesalahan (${res.status}).`;
+    if (data?.errors && typeof data.errors === "object" && Object.keys(data.errors).length > 0) {
+      const details = Object.values(data.errors).flat().join(" • ");
+      msg = `${msg}: ${details}`;
+    }
+    const error = new Error(msg);
     error.errors = data?.errors || {};
     throw error;
   }
@@ -80,6 +105,7 @@ export const treeApi = {
   getPublic:     (id)          => api.get(`/trees/${id}/public`),
   create:        (data)        => api.post("/trees", data),
   updateHealth:  (id, status)  => api.patch(`/trees/${id}/health`, { health_status: status }),
+  addPhoto:      (id, data)    => api.post(`/trees/${id}/photos`, data),
 };
 
 // ── Petani ────────────────────────────────────────────────────────────────────
@@ -110,10 +136,19 @@ export const accountApi = {
 
 // ── Carbon Fund ───────────────────────────────────────────────────────────────
 export const carbonFundApi = {
-  income:       ()     => api.get("/carbon-fund/income"),
+  income:       (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return api.get(`/carbon-fund/income${qs ? "?" + qs : ""}`);
+  },
   addIncome:    (data) => api.post("/carbon-fund/income", data),
-  distribution: ()     => api.get("/carbon-fund/distribution"),
-  summary:      ()     => api.get("/carbon-fund/summary"),
+  distribution: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return api.get(`/carbon-fund/distribution${qs ? "?" + qs : ""}`);
+  },
+  summary:      (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return api.get(`/carbon-fund/summary${qs ? "?" + qs : ""}`);
+  },
 };
 
 // ── Sertifikat / Adopsi ───────────────────────────────────────────────────────

@@ -1,38 +1,46 @@
 import { useState } from "react";
-import { ScanLine, Loader2 } from "lucide-react";
-import { treeApi } from "../lib/api";
+import { ScanLine } from "lucide-react";
 import ScanResultModal from "./ScanResultModal";
+import CameraScanModal from "./CameraScanModal";
 import { useAuth } from "../lib/AuthContext";
 
 export default function ScanBarcodeButton() {
   const { user } = useAuth();
-  const [scanning, setScanning] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
   const [scannedTreeId, setScannedTreeId] = useState(null);
 
-  async function handleScan() {
-    setScanning(true);
-    try {
-      // TODO: ganti dengan html5-qrcode (lihat QrDemoPage.jsx)
-      // Sementara: ambil pohon random dari API
-      const trees = await treeApi.list();
-      const random = trees[Math.floor(Math.random() * trees.length)];
-      setScannedTreeId(random.id);
-    } catch (e) {
-      alert("Gagal memuat data pohon: " + e.message);
-    } finally {
-      setScanning(false);
-    }
+  function handleScanResult(treeId) {
+    // Tutup kamera dulu, lalu tampilkan hasil
+    setCameraOpen(false);
+    setScannedTreeId(treeId);
   }
 
   return (
     <>
-      <button onClick={handleScan} disabled={scanning}
-        className="flex items-center gap-2 bg-gold-500 hover:bg-gold-600 text-forest-950 text-sm font-semibold rounded-lg px-3.5 py-2 transition-colors disabled:opacity-70">
-        {scanning ? <><Loader2 size={15} className="animate-spin"/>Memindai...</> : <><ScanLine size={15}/>Scan Barcode</>}
+      <button
+        id="btn-scan-barcode"
+        onClick={() => setCameraOpen(true)}
+        className="flex items-center gap-2 bg-gold-500 hover:bg-gold-600 active:scale-95 text-forest-950 text-sm font-semibold rounded-lg px-3.5 py-2 transition-all duration-150"
+      >
+        <ScanLine size={15} />
+        Scan Barcode
       </button>
+
+      {/* Modal kamera — hanya di-mount saat dibutuhkan supaya kamera
+          tidak aktif terus dan lifecycle Html5Qrcode bersih */}
+      {cameraOpen && (
+        <CameraScanModal
+          onResult={handleScanResult}
+          onClose={() => setCameraOpen(false)}
+        />
+      )}
+
       {scannedTreeId && (
-        <ScanResultModal treeId={scannedTreeId} role={user?.role ?? "admin"}
-          onClose={() => setScannedTreeId(null)} />
+        <ScanResultModal
+          treeId={scannedTreeId}
+          role={user?.role ?? "admin"}
+          onClose={() => setScannedTreeId(null)}
+        />
       )}
     </>
   );
