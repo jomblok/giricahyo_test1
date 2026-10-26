@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Leaf, MapPin, User, Cloud, ArrowLeft, Loader2, AlertCircle, Camera, Stethoscope, Car, Share2, Check, ImageOff, Ruler } from "lucide-react";
 import { useAuth } from "../lib/AuthContext";
@@ -31,18 +31,17 @@ export default function PublicTreePage() {
   const [tree, setTree] = useState(null);
   const [farmer, setFarmer] = useState(null);
   const [loading, setLoading] = useState(true);
+  // { tidakAda, pesan } — lihat catch di loadData kenapa keduanya dibedakan.
   const [error, setError] = useState(null);
-  const [isSample, setIsSample] = useState(false);
   const [photos, setPhotos] = useState([]);
   const [photoOpen, setPhotoOpen] = useState(false);
   const [savingHealth, setSavingHealth] = useState(null);
   const toast = useToast();
   const { t } = useLanguage();
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
-    setIsSample(false);
     setPhotos([]);
     try {
       const res = await treeApi.getPublic(id);
@@ -58,34 +57,24 @@ export default function PublicTreePage() {
         throw new Error("Invalid response format");
       }
     } catch (e) {
-      // Fallback ke data contoh HANYA saat development. Di produksi halaman
-      // publik ini tidak boleh diam-diam menampilkan data mock seolah nyata —
-      // pengunjung tidak punya cara membedakannya.
-      if (import.meta.env.DEV) {
-        console.warn("API gagal — memakai data contoh lokal (khusus development).");
-        try {
-          const { getTreeDetail } = await import("../lib/joins.js");
-          const detail = getTreeDetail(id);
-          // cause diteruskan: tanpa itu penyebab asli kegagalan API hilang dan
-          // yang tersisa hanya "Pohon tidak ditemukan", padahal pohonnya bisa
-          // saja ada — yang gagal justru koneksi ke API.
-          if (!detail) throw new Error("Pohon tidak ditemukan", { cause: e });
-          setTree(detail.tree);
-          setFarmer(detail.farmer);
-          setPhotos(detail.photos ?? detail.tree?.photos ?? []);
-          setIsSample(true);
-        } catch (mockErr) {
-          setError(mockErr.message);
-        }
-      } else {
-        setError(e.message || "Pohon tidak ditemukan.");
-      }
+      // "TIDAK ADA" DAN "GAGAL DIMUAT" DIBEDAKAN. Halaman ini dibuka lewat
+      // pindai QR, sering dari ponsel di jaringan yang tidak stabil. Dulu
+      // setiap kegagalan ditampilkan sebagai "ID pohon ini tidak terdaftar" —
+      // jadi saat koneksi putus, tamu yang memindai pohon yang jelas-jelas ada
+      // diberi tahu pohonnya tidak terdaftar. Hanya 404 yang berarti tidak ada;
+      // selebihnya menampilkan penyebab sebenarnya beserta tombol coba lagi.
+      //
+      // Fallback ke data contoh lokal (lib/joins.js + src/data/) DIHAPUS.
+      // Ia hanya aktif di mode pengembangan, mencari pohon berpola GJR-001-001
+      // yang tidak pernah cocok dengan ID asli GJR-L1-…, sehingga satu-satunya
+      // efeknya adalah mengganti pesan galat yang jujur dengan "tidak ditemukan".
+      setError({ tidakAda: e.status === 404, pesan: e.message });
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
-  useEffect(() => { loadData(); }, [id]);
+  useEffect(() => { loadData(); }, [loadData]);
 
   // Panel petugas sebelumnya hanya memanggil alert() berisi teks placeholder.
   // Endpoint-nya sudah tersedia, jadi sekarang benar-benar menyimpan.
@@ -112,24 +101,36 @@ export default function PublicTreePage() {
           <span className="text-cream-50/70 text-xs font-semibold uppercase tracking-wider">Giricahyo Carbon</span>
         </div>
 
-        {isSample && (
-          <div className="mb-4 flex items-start gap-2 rounded-xl bg-gold-500/15 border border-gold-500/30 px-3 py-2 text-[11px] text-gold-300">
-            <AlertCircle size={13} className="shrink-0 mt-0.5" />
-            <span>Data contoh (mode pengembangan) — bukan data pohon sungguhan.</span>
-          </div>
-        )}
-
         {loading && (
           <div className="flex justify-center py-16">
             <Loader2 size={28} className="animate-spin text-sage-400" />
           </div>
         )}
 
-        {error && (
+        {/* !tree: kalau muat ulang gagal SETELAH data sudah tampil (mis. sesudah
+            petugas memperbarui kondisi), data yang sudah ada tetap dibiarkan
+            terlihat alih-alih diganti kotak galat. */}
+        {error && !tree && (
           <div className="bg-forest-900 rounded-3xl p-8 text-center">
             <AlertCircle size={32} className="mx-auto mb-3 text-clay-400" />
-            <p className="font-semibold text-cream-50 mb-1">Pohon tidak ditemukan</p>
-            <p className="text-sm text-cream-50/60">ID pohon <span className="font-mono-id">{id}</span> tidak terdaftar.</p>
+            {error.tidakAda ? (
+              <>
+                <p className="font-semibold text-cream-50 mb-1">Pohon tidak ditemukan</p>
+                <p className="text-sm text-cream-50/60">ID pohon <span className="font-mono-id">{id}</span> tidak terdaftar.</p>
+              </>
+            ) : (
+              <>
+                <p className="font-semibold text-cream-50 mb-1">Data pohon belum bisa dimuat</p>
+                <p className="text-sm text-cream-50/60">{error.pesan}</p>
+                <button
+                  type="button"
+                  onClick={loadData}
+                  className="mt-5 inline-flex items-center justify-center rounded-xl bg-sage-500/20 px-5 py-2.5 text-sm font-semibold text-sage-300 hover:bg-sage-500/30 transition-colors"
+                >
+                  Coba lagi
+                </button>
+              </>
+            )}
           </div>
         )}
 
@@ -253,11 +254,19 @@ export default function PublicTreePage() {
           />
         )}
 
-        <ShareButton treeId={id} />
+        {/* Hanya kalau pohonnya benar-benar termuat — membagikan tautan ke ID
+            yang tidak terdaftar, atau yang belum bisa dimuat, hanya meneruskan
+            kotak galat ke orang lain. */}
+        {tree && <ShareButton treeId={id} />}
 
-        <Link to="/" className="flex items-center justify-center gap-1.5 text-cream-50/70 text-xs mt-6 hover:text-cream-50/70 transition-colors">
-          <ArrowLeft size={12} />Kembali ke Dashboard
-        </Link>
+        {/* Hanya untuk yang sudah masuk. Halaman ini terutama dibuka tamu yang
+            memindai QR di kebun; bagi mereka tidak ada dashboard untuk dituju,
+            dan tautan ini dulu justru melempar mereka ke halaman login. */}
+        {user && (
+          <Link to="/" className="flex items-center justify-center gap-1.5 text-cream-50/70 text-xs mt-6 hover:text-cream-50/70 transition-colors">
+            <ArrowLeft size={12} />Kembali ke Dashboard
+          </Link>
+        )}
       </div>
     </div>
   );

@@ -150,10 +150,17 @@ async function request(method, path, body = null) {
   } else {
     const text = await res.text();
     if (!res.ok) {
-      if (res.status === 404) {
-        throw new Error(`Pohon dengan ID "${path.split("/").pop()}" tidak ditemukan di database.`);
-      }
-      throw new Error(`Respon server non-JSON (${res.status}): ${text.substring(0, 80)}`);
+      // Pesan 404 di sini SENGAJA umum. Versi lama menulis "Pohon dengan ID
+      // ... tidak ditemukan" untuk SETIAP 404 dari endpoint mana pun, dan
+      // mengambil ID-nya dari ujung path — pada /trees/GJR-X/public ujung itu
+      // adalah "public", sehingga pesannya menyebut pohon berID "public".
+      const galat = new Error(
+        res.status === 404
+          ? "Data tidak ditemukan."
+          : `Respon server non-JSON (${res.status}): ${text.substring(0, 80)}`
+      );
+      galat.status = res.status;
+      throw galat;
     }
     try {
       data = JSON.parse(text);
@@ -180,6 +187,10 @@ async function request(method, path, body = null) {
     }
     const error = new Error(msg);
     error.errors = data?.errors || {};
+    // Kode status ikut dibawa supaya pemanggil bisa membedakan "datanya memang
+    // tidak ada" (404) dari kegagalan lain. Tanpa ini halaman publik pohon
+    // menyebut pohon "tidak terdaftar" padahal yang gagal servernya.
+    error.status = res.status;
     throw error;
   }
 

@@ -6,7 +6,7 @@ import { lazy, Suspense } from "react";
 // `false` saat build, sehingga cabang di bawah mati dan SELURUH src/dev/
 // tidak ikut ke bundel produksi. Diperiksa dengan menggeledah hasil build.
 const PanelAudit = import.meta.env.DEV ? lazy(() => import("./dev/PanelAudit")) : null;
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 import { useAuth } from "./lib/AuthContext";
 import LoginPage from "./pages/LoginPage";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -71,6 +71,18 @@ function DashboardRouter() {
   return <DashboardPage />; // admin default
 }
 
+// Halaman publik pohon DIPASANG ULANG setiap kali ID-nya berganti.
+//
+// Tanpa key, berpindah dari /pohon/A ke /pohon/B memakai ulang komponen yang
+// sama beserta seluruh state-nya: data pohon A tetap tersimpan selama data B
+// dimuat, dan kalau B gagal dimuat, kartu A tetap terpampang di bawah alamat
+// B tanpa peringatan apa pun. Mengosongkan state satu per satu mudah terlewat
+// satu (foto, modal, status simpan); key membuang semuanya sekaligus.
+function RutePohonPublik() {
+  const { id } = useParams();
+  return <PublicTreePage key={id} />;
+}
+
 const admin  = (el) => <PrivateRoute><RoleOnly roles={["admin"]}>{el}</RoleOnly></PrivateRoute>;
 const farmer = (el) => <PrivateRoute><RoleOnly roles={["farmer"]}>{el}</RoleOnly></PrivateRoute>;
 const buyer  = (el) => <PrivateRoute><RoleOnly roles={["buyer"]}>{el}</RoleOnly></PrivateRoute>;
@@ -83,7 +95,7 @@ export default function App() {
           <Routes>
             {/* Publik */}
             <Route path="/login"     element={<LoginRedirect />} />
-            <Route path="/pohon/:id" element={<PublicTreePage />} />
+            <Route path="/pohon/:id" element={<RutePohonPublik />} />
             {/* Publik, tanpa login — dibuka lewat token acak. */}
             <Route path="/dampak-publik/:token" element={<PublicImpactPage />} />
 
