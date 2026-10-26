@@ -1,40 +1,45 @@
 import { Trophy } from "lucide-react";
-import { useDb } from "../lib/useDb";
-import { getAdminInsights } from "../lib/joins";
 import { formatNumber } from "../lib/format";
+import { useLanguage } from "../lib/LanguageContext";
+import { Card, CardHeader, EmptyState } from "./ui";
 
-export default function TopContributorsCard() {
-  const { topFarmers } = useDb(() => getAdminInsights());
+export default function TopContributorsCard({ topFarmers = [] }) {
+  const { t } = useLanguage();
 
   return (
-    <div className="bg-white rounded-2xl border border-cream-100 p-5 shadow-sm h-full flex flex-col">
-      <div className="flex items-center gap-2 mb-4">
-        <Trophy size={17} className="text-gold-600" />
-        <h3 className="font-semibold text-forest-950 text-sm">Top Kontributor CO₂</h3>
-      </div>
+    <Card className="h-full flex flex-col">
+      <CardHeader icon={Trophy} title={t("top_co2_contributors")} />
       <div className="space-y-3 flex-1">
         {topFarmers.map((f, i) => (
-          <div key={f.id} className="flex items-center gap-3">
-            <span
-              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                i === 0 ? "bg-gold-500 text-forest-950" : "bg-cream-100 text-forest-700/50"
+          // GET /dashboard/summary mengembalikan `farmer_id`, bukan `id` —
+          // sebelumnya key-nya undefined untuk SEMUA baris, jadi React tidak
+          // bisa membedakan satu petani dari yang lain saat daftarnya berubah
+          // urutan (mis. setelah ganti periode) dan bisa memasangkan ulang
+          // baris ke data yang salah.
+          <div key={f.farmer_id} className="flex items-center gap-3">
+            {/* Peringkat 1 ditandai emas, sisanya netral — supaya peringkat
+                terbaca sekilas tanpa harus membaca angkanya. */}
+            <div
+              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 tabular ${
+                i === 0 ? "bg-warn-soft text-warn" : "bg-surface-sub text-ink-faint"
               }`}
             >
               {i + 1}
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-forest-950 truncate">{f.name}</p>
-              <p className="text-[11px] text-forest-700/45">{f.groupCoop}</p>
             </div>
-            <span className="text-sm font-bold text-forest-900 tabular shrink-0">
-              {formatNumber(f.totalCo2Kg, 1)} kg
-            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-[13px] font-semibold text-ink truncate">{f.name}</p>
+              <p className="text-[10px] text-ink-faint truncate">{f.group_coop ?? f.groupCoop}</p>
+            </div>
+            <p className="text-[13px] font-bold text-ink tabular shrink-0">
+              {formatNumber(f.total_co2_kg ?? f.totalCo2Kg ?? 0, 1)}
+              <span className="text-[10px] font-medium text-ink-faint ml-0.5">kg</span>
+            </p>
           </div>
         ))}
         {topFarmers.length === 0 && (
-          <p className="text-sm text-forest-700/40 text-center py-4">Belum ada data.</p>
+          <EmptyState icon={Trophy} title={t("no_data_yet")} compact />
         )}
       </div>
-    </div>
+    </Card>
   );
 }

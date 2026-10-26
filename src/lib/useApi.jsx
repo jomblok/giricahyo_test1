@@ -10,6 +10,7 @@
 // - `error` berisi pesan string jika gagal, null jika sukses
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { AlertTriangle } from "lucide-react";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function useApi(fetcher, deps = []) {
@@ -45,16 +46,25 @@ export function useApi(fetcher, deps = []) {
 export function ApiState({ loading, error, children, skeleton = null }) {
   if (loading) {
     return skeleton || (
-      <div className="flex items-center justify-center py-12">
-        <div className="w-6 h-6 border-2 border-sage-400/30 border-t-sage-500 rounded-full animate-spin" />
+      <div className="flex items-center justify-center py-12" role="status" aria-label="Memuat">
+        <div className="w-6 h-6 border-2 border-brand/25 border-t-brand rounded-full animate-spin" />
       </div>
     );
   }
+  // Sesi habis ditangani AuthContext (pindah ke /login lewat router);
+  // di sini cukup jangan tampilkan kode teknisnya ke pengguna.
+  if (error === "SESSION_EXPIRED") return null;
+
   if (error) {
+    // Sebelumnya kotak ini memakai bg-clay-100/text-clay-700 tanpa varian dark:,
+    // jadi muncul sebagai blok terang di tengah halaman gelap.
     return (
-      <div className="flex items-center gap-2 bg-clay-100 text-clay-700 text-sm rounded-xl px-4 py-3 border border-clay-200">
-        <span className="shrink-0">⚠️</span>
-        <p>{error}</p>
+      <div
+        role="alert"
+        className="flex items-start gap-2.5 bg-bad-soft text-bad text-sm rounded-xl px-4 py-3 border border-bad/25"
+      >
+        <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+        <p className="min-w-0">{error}</p>
       </div>
     );
   }

@@ -1,35 +1,280 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+/* Font dimuat lewat <link> di index.html — lihat penjelasannya di sana. */
 @import "tailwindcss";
 
+/* === THIS LINE ENABLES CLASS-BASED DARK MODE FOR TAILWIND v4 === */
+@custom-variant dark (&:where(.dark *));
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   1. PALET DASAR — warna mentah Giricahyo.
+   Tidak berubah antar tema. Ini "cat"-nya, bukan "perannya".
+   ═══════════════════════════════════════════════════════════════════════════ */
 @theme {
   --color-forest-950: #0e2a21;
   --color-forest-900: #15392e;
   --color-forest-800: #1d4a3b;
   --color-forest-700: #275c49;
+  --color-forest-600: #31705a;   /* BARU — dipakai CameraScanModal            */
+  --color-forest-50:  #eef3f0;   /* BARU — dipakai ManageUsersPage            */
+
+  --color-sage-950: #0f2619;     /* BARU — dipakai BuyerDashboardPage         */
+  --color-sage-900: #1a3d2a;
+  --color-sage-700: #256045;     /* BARU — dipakai 5 file                     */
   --color-sage-600: #2f6e51;
   --color-sage-500: #3f8862;
   --color-sage-400: #6aab82;
+  --color-sage-300: #8ec4a0;
+  --color-sage-200: #b9dcc6;
   --color-sage-100: #e1eade;
+  --color-sage-50:  #f0f6f2;     /* BARU — dipakai 5 file                     */
+
+  /* gold-700 BARU: gold-500 di atas putih hanya ~2.6:1 (gagal WCAG AA).
+     Nada ini ~5.5:1 — dipakai untuk TEKS. gold-500 tetap untuk isian & ikon. */
+  --color-gold-800: #6b4f18;
+  --color-gold-700: #85631f;
   --color-gold-600: #a9802f;
   --color-gold-500: #c89b3c;
+  --color-gold-400: #d4ae5a;
+  --color-gold-300: #e0c17a;
+  --color-gold-200: #ecd8a4;     /* BARU — dipakai BuyerDashboardPage         */
   --color-gold-100: #f3e6c4;
+  --color-gold-50:  #faf3e4;     /* BARU — dipakai BuyerDashboardPage         */
+  --color-gold-900: #3d2e10;
+  --color-gold-950: #241a08;     /* BARU — dipakai BuyerDashboardPage         */
+
   --color-cream-50: #f6f3ea;
   --color-cream-100: #efe9d8;
+  --color-cream-200: #e4dcc8;
+  --color-cream-300: #d4caaf;
+
+  --color-clay-950: #3d0f0a;     /* BARU — dipakai 3 file                     */
   --color-clay-700: #7a1e14;
+  --color-clay-500: #a43828;
+  --color-clay-400: #c4503e;
+  --color-clay-300: #d97a68;     /* BARU — dipakai 2 file                     */
+  --color-clay-200: #e8a99e;
   --color-clay-100: #f4ddd8;
 
-  --font-sans: "Inter", system-ui, sans-serif;
+  /* Nyaris hitam dengan semburat hijau — bidang paling gelap yang dimiliki
+     palet ini. Ada karena `forest-950` (#0e2a21) ternyata terlalu terang untuk
+     dipakai sebagai LATAR di belakang panel yang juga hijau: layar login lama
+     memakai forest-950 di kiri dan forest-900 di kanan, dua nada yang nyaris
+     sama terangnya, sehingga kedua sisinya melebur jadi satu bidang kusam.
+     Nada ini memisahkan keduanya dengan tegas tanpa keluar dari palet. */
+  --color-ink-950: #070c0a;
+  /* Satu tingkat di atas ink-950: bidang untuk sisi form, supaya kartu di
+     atasnya punya sesuatu untuk ditimbuli. Tangga terangnya sekarang
+     070c0a (panel kiri) -> 0b1310 (bidang form) -> 15392e (kartu). */
+  --color-ink-900: #0b1310;
+
+  /* Work Sans dipilih setelah pengukuran, bukan perkiraan: tinggi-x-nya
+     0,758 (tertinggi di antara semua kandidat, di atas Inter 0,753) sehingga
+     teks 12–13px di tabel pohon lebih terbaca, dan lebar digitnya 0,604em
+     lawan 0,648em milik Inter sehingga kolom angka jadi lebih rapat. Angka
+     tabularnya berfungsi — itu syarat mati di sini karena hampir semua tabel
+     memakai font-variant-numeric: tabular-nums.
+
+     Inter dipertahankan sebagai cadangan pertama: kalau Google Fonts gagal
+     dimuat dari lapangan, tampilannya jatuh ke huruf yang metriknya paling
+     mirip, bukan langsung ke Arial yang jauh lebih lebar. */
+  --font-sans: "Work Sans", "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
+  /* Serif untuk judul. Sengaja HANYA untuk judul: tinggi-x-nya besar tapi
+     hurufnya lebar, jadi pada teks kecil ia memakan ruang tanpa menambah
+     keterbacaan.
+
+     PENTING — font ini STATIS dan hanya punya bobot 400 dan 700. Jangan
+     memakai font-medium / font-semibold / font-extrabold bersamanya: bobot
+     itu tidak ada dan peramban akan memalsukannya dengan mencoreng huruf
+     400 (faux bold), yang paling kelihatan di judul besar halaman login. */
+  /* SANS, BUKAN SERIF. Semula Libre Baskerville. Rancangan PKM memakai satu
+     keluarga sans di seluruh halaman — tidak ada serif di mana pun — dan judul
+     serif di antara isi sans membuat dua halaman terasa berasal dari dua
+     aplikasi berbeda. Berlaku juga pada sertifikat dan laporan cetak yang
+     memakai .gjr-display; kalau keduanya nanti ingin serif kembali, cukup
+     kembalikan baris ini dan pakai kelas tersendiri di sana. */
+  --font-display: "Work Sans", "Inter", system-ui, sans-serif;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   2. TOKEN PERAN — apa fungsi warna itu, bukan warnanya apa.
+   Ini yang otomatis membalik saat tema berganti, jadi komponen tidak perlu
+   lagi menulis pasangan `bg-white dark:bg-forest-900` di mana-mana.
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root {
+  --ground:        #f6f3ea;   /* latar halaman            */
+  --surface:       #ffffff;   /* latar kartu              */
+  --surface-sub:   #f6f3ea;   /* kotak di dalam kartu     */
+  --surface-hover: #f1ece0;   /* baris tabel saat hover   */
+
+  --line:          #efe9d8;   /* garis & border halus     */
+  --line-strong:   #e4dcc8;   /* border yang lebih tegas  */
+
+  --ink:           #0e2a21;   /* teks utama               */
+  --ink-muted:     #4c6156;   /* teks sekunder            */
+  /* Digelapkan dari #7d8d84. Nilai lama hanya mencapai rasio 3,49 di atas
+     --surface dan 3,15 di atas --surface-sub — dua-duanya di bawah ambang
+     WCAG AA 4,5 untuk teks biasa, dan token ini dipakai justru untuk teks
+     TERKECIL di aplikasi (label 9-11px). Nilai baru terukur 5,30 di atas
+     putih dan 4,78 di atas krem, dan tetap lebih terang dari --ink-muted
+     sehingga urutan hierarkinya tidak berubah. */
+  --ink-faint:     #5f6f66;   /* label, keterangan kecil  */
+
+  --brand:         #2f6e51;   /* aksen utama (sage-600)   */
+
+  /* ── Sidebar ──────────────────────────────────────────────────────────
+     Sidebar SENGAJA gelap di kedua tema, mengikuti arah visual rancangan:
+     bidang hijau pekat di kiri sebagai jangkar, isi halaman terang di kanan.
+     Diberi token sendiri, bukan memakai --surface, karena justru itu intinya
+     — ia tidak boleh ikut berganti saat tema berganti.
+     Kontras cream di atas hijau pekat ini terukur jauh di atas ambang WCAG. */
+  --sidebar:            #0e2a21;
+  --sidebar-ink:        #f6f3ea;
+  --sidebar-ink-muted:  #9fb3a7;
+  --sidebar-active:     #1d4a3b;
+  --sidebar-active-ink: #ffffff;
+  --sidebar-line:       #ffffff1f;
+  --brand-soft:    #e1eade;   /* latar lembut aksen       */
+  --brand-ink:     #1d4a3b;   /* teks di atas brand-soft  */
+
+  --good:          #2f6e51;
+  --good-soft:     #e1eade;
+  /* Digelapkan dari #85631f, yang terukur 4,45 di atas --warn-soft — tepat
+     di bawah ambang WCAG AA 4,5, dan dipakai 21 kali sebagai teks lencana.
+     Nilai ini terukur 4,90. */
+  --warn:          #7d5d1d;   /* gold-700, kontras AA     */
+  --warn-soft:     #f3e6c4;
+  --bad:           #7a1e14;
+  --bad-soft:      #f4ddd8;
+
+  /* Warna chart — dibaca Recharts lewat getComputedStyle / var() */
+  --chart-1:       #2f6e51;
+  --chart-2:       #c89b3c;
+  --chart-3:       #6aab82;
+  --chart-4:       #275c49;
+  --chart-5:       #a43828;
+  --chart-grid:    #efe9d8;
+  --chart-axis:    #7d8d84;
+
+  /* ── Warna aksen per jenis pohon ───────────────────────────────────────
+     Mengikuti rancangan PKM, yang memberi tiap jenis warna sendiri sehingga
+     satu baris kartu bisa dipindai tanpa membaca namanya satu per satu.
+
+     ENAM, BUKAN SATU PER JENIS. Katalog bisa tumbuh; daftar warna tidak
+     perlu ikut tumbuh. Jenis dipetakan ke salah satu dari enam ini lewat
+     namanya (lihat lib/fotoJenis.js), jadi warnanya tetap sama tiap kali
+     halaman dimuat — pengurus bisa mengenali jenis dari warnanya.
+
+     SEMUA SUDAH DIUKUR, bukan dikira-kira. Rasio terendah di antara
+     keduabelas nilai ini adalah 5,45 di atas latar kartu paling terang dan
+     6,37 di atas latar kartu paling gelap — keduanya di atas ambang WCAG AA
+     4,5 dengan sisa ruang untuk latar kartu terpilih yang sedikit berwarna.
+     Mengganti salah satunya berarti mengukur ulang, bukan menebak. */
+  --jenis-1: #2f6e51;
+  --jenis-2: #8f4f14;
+  --jenis-3: #a33527;
+  --jenis-4: #1f6b6b;
+  --jenis-5: #7a4b1d;
+  --jenis-6: #55671a;
+}
+
+html.dark {
+  --ground:        #0e2a21;
+  --surface:       #15392e;
+  --surface-sub:   #0e2a21;
+  --surface-hover: #1d4a3b;
+
+  --line:          #1d4a3b;
+  --line-strong:   #275c49;
+
+  --ink:           #f6f3ea;
+  --ink-muted:     #b6c4ba;
+  --ink-faint:     #8ba093;
+
+  --brand:         #6aab82;
+  --brand-soft:    #1a3d2a;
+  --brand-ink:     #8ec4a0;
+
+  /* Dicerahkan dari #6aab82, yang di atas --good-soft tema gelap terukur
+     4,45 — tepat di bawah ambang WCAG AA 4,5, dan dipakai sebagai teks
+     lencana kondisi pada SETIAP kartu pohon (179 kejadian di satu layar). */
+  --good:          #7cbb93;
+  --good-soft:     #1a3d2a;
+  --warn:          #d4ae5a;
+  --warn-soft:     #3d2e10;
+  --bad:           #e8a99e;
+  --bad-soft:      #4a1610;
+
+  /* Chart di tema gelap: dicerahkan supaya tidak hilang di latar hijau tua */
+  --chart-1:       #6aab82;
+  --chart-2:       #d4ae5a;
+  --chart-3:       #8ec4a0;
+  --chart-4:       #3f8862;
+  --chart-5:       #c4503e;
+  --chart-grid:    #1d4a3b;
+  --chart-axis:    #8ba093;
+
+  /* Versi terang untuk tema gelap — lihat catatan di blok terang.
+     Rasio terendah 6,37 di atas latar kartu gelap. */
+  --jenis-1: #86c39c;
+  --jenis-2: #e0a86a;
+  --jenis-3: #e89080;
+  --jenis-4: #73c6c6;
+  --jenis-5: #cfa87c;
+  --jenis-6: #aec471;
+}
+
+/* `inline` membuat Tailwind menanam var() langsung di utility-nya, sehingga
+   `bg-surface` / `text-ink` ikut berubah begitu class `.dark` dipasang. */
+@theme inline {
+  --color-ground:        var(--ground);
+  --color-surface:       var(--surface);
+  --color-surface-sub:   var(--surface-sub);
+  --color-surface-hover: var(--surface-hover);
+
+  --color-line:          var(--line);
+  --color-line-strong:   var(--line-strong);
+
+  --color-ink:           var(--ink);
+  --color-ink-muted:     var(--ink-muted);
+  --color-ink-faint:     var(--ink-faint);
+  --color-sidebar:            var(--sidebar);
+  --color-sidebar-ink:        var(--sidebar-ink);
+  --color-sidebar-ink-muted:  var(--sidebar-ink-muted);
+  --color-sidebar-active:     var(--sidebar-active);
+  --color-sidebar-active-ink: var(--sidebar-active-ink);
+  --color-sidebar-line:       var(--sidebar-line);
+  --color-jenis-1: var(--jenis-1);
+  --color-jenis-2: var(--jenis-2);
+  --color-jenis-3: var(--jenis-3);
+  --color-jenis-4: var(--jenis-4);
+  --color-jenis-5: var(--jenis-5);
+  --color-jenis-6: var(--jenis-6);
+
+  --color-brand:         var(--brand);
+  --color-brand-soft:    var(--brand-soft);
+  --color-brand-ink:     var(--brand-ink);
+
+  --color-good:          var(--good);
+  --color-good-soft:     var(--good-soft);
+  --color-warn:          var(--warn);
+  --color-warn-soft:     var(--warn-soft);
+  --color-bad:           var(--bad);
+  --color-bad-soft:      var(--bad-soft);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   3. BASE
+   ═══════════════════════════════════════════════════════════════════════════ */
 html, body, #root {
   height: 100%;
 }
 
 body {
-  background-color: var(--color-cream-50);
+  background-color: var(--ground);
+  color: var(--ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .font-mono-id {
@@ -41,6 +286,106 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* ───────────────────────────────────────────────────────────────────────────
+   TEKS 10px DINAIKKAN DI LAYAR KECIL
+
+   Diukur di seluruh aplikasi pada lebar 375px: 537 dari 541 teks di bawah
+   11px berasal dari SATU kelas, `text-[10px]`, yang dipakai 110 kali di 37
+   berkas untuk label, kode ID, dan keterangan kecil.
+
+   10px masih wajar di layar besar dengan jarak baca 50-60 cm. Di ponsel yang
+   dipegang sambil berdiri di kebun, di bawah sinar matahari, oleh pengurus
+   yang mungkin sudah berumur, ia terlalu kecil.
+
+   DIPASANG DI SINI, BUKAN DICARI-GANTI DI 37 BERKAS. Alasannya niatnya
+   memang spesifik layar: ukurannya tidak salah, hanya tidak cocok untuk
+   lebar ini. Satu aturan bermedia menyatakan persis itu, dan membiarkan
+   kerapatan tampilan desktop apa adanya. Kalau suatu saat 10px memang perlu
+   dipertahankan di satu tempat tertentu, tempat itu yang diberi pengecualian
+   — bukan aturan ini yang dihapus.
+
+   Tidak menyentuh blok cetak: tidak satu pun dari 110 kejadian itu berada di
+   dalam varian `print:`, jadi hasil cetak tidak berubah. */
+@media (max-width: 640px) {
+  .text-\[10px\],
+  .text-\[9px\] {
+    font-size: 11px;
+  }
+}
+
+/* Fokus keyboard yang terlihat di seluruh aplikasi. */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TARGET SENTUH — 44px di perangkat berjari
+   ═══════════════════════════════════════════════════════════════════════════
+
+   Diukur di peramban sebelum aturan ini ada: dari 190 elemen interaktif di
+   satu halaman, TIDAK SATU PUN mencapai 44px. Mayoritas 40px, dan tombol ikon
+   Notifikasi serta profil hanya 32px. Itu lulus ambang minimum WCAG 2.2 AA
+   (24px) tapi meleset dari patokan perangkat sentuh: Apple 44pt, Google 48dp,
+   WCAG AAA 44px. Selisih beberapa piksel itu terasa nyata untuk ibu jari di
+   kebun, apalagi dengan tangan basah.
+
+   KENAPA DI SINI, BUKAN DI KOMPONEN Button. Pengukuran menunjukkan 179 dari
+   182 tombol terkecil BUKAN komponen <Button> melainkan <button> mentah
+   dengan kelas tulisan tangan. Memperbaiki komponennya saja tidak menyentuh
+   mereka, dan mengejar satu per satu akan terlewat lagi saat tombol baru
+   ditulis. Aturan ini berlaku ke semuanya sekaligus, termasuk yang belum ada.
+
+   KENAPA pointer: coarse. Varian ini hanya cocok pada perangkat yang
+   penunjuknya kasar — jari, bukan tetikus. Jadi ponsel dan tablet mendapat
+   44px, sementara admin yang bekerja di layar lebar dengan tetikus tetap
+   mendapat tabel padat seperti sebelumnya. Satu angka tidak bisa benar untuk
+   kedua kondisi itu sekaligus.
+
+   min-height, BUKAN height: isi yang lebih tinggi dari 44px tetap muat, dan
+   tombol tidak terpotong. Pasangan min-width hanya untuk tombol yang isinya
+   semata ikon, karena tombol bujur sangkar yang hanya ditinggikan berubah
+   jadi lonjong sempit yang tetap sulit disentuh.
+
+   Pintu keluar: tambahkan kelas `sentuh-rapat` pada elemen yang memang harus
+   tetap kecil — misalnya tombol di dalam baris tabel yang padat. */
+@media (pointer: coarse) {
+  button:not(.sentuh-rapat),
+  [role="button"]:not(.sentuh-rapat),
+  a[href]:not(.sentuh-rapat),
+  summary:not(.sentuh-rapat),
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]),
+  select,
+  textarea {
+    min-height: 44px;
+  }
+
+  /* Tombol yang isinya hanya ikon: kotaknya harus lebar juga, bukan lonjong. */
+  button:not(.sentuh-rapat):has(> svg:only-child),
+  [role="button"]:not(.sentuh-rapat):has(> svg:only-child),
+  a[href]:not(.sentuh-rapat):has(> svg:only-child) {
+    min-width: 44px;
+  }
+
+  /* Tautan di dalam kalimat BUKAN tombol. Meninggikannya merusak jarak baris
+     paragraf, dan ia memang tidak dimaksudkan untuk disentuh sebagai sasaran
+     tersendiri — pengguna menyentuh katanya. */
+  p a[href],
+  li a[href],
+  span a[href] {
+    min-height: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 ::-webkit-scrollbar {
   height: 8px;
   width: 8px;
@@ -48,6 +393,9 @@ body {
 ::-webkit-scrollbar-thumb {
   background-color: #c4baa3;
   border-radius: 8px;
+}
+html.dark ::-webkit-scrollbar-thumb {
+  background-color: #275c49;
 }
 ::-webkit-scrollbar-track {
   background-color: transparent;
@@ -63,15 +411,649 @@ body {
   border-radius: 0.75rem;
 }
 
-/* Leaflet popup restyle to match palette */
+/* ───────────────────────────────────────────────────────────────────────────
+   PEMINDAI QR — video mempertahankan rasionya
+
+   html5-qrcode menyisipkan <video> sendiri ke dalam wadah, dan memasang
+   overlay kotak pindai memakai KOORDINAT VIDEO. Begitu video itu dipipihkan
+   oleh CSS, overlay-nya ikut terpipihkan: kotak persegi 504x504 di koordinat
+   video bisa tampil 210x118 di layar, dan pengguna melihat kotak melintang
+   yang tidak menyerupai QR sama sekali.
+
+   KUNCINYA: JANGAN MENGUBAH UKURAN VIDEO LEWAT CSS SAMA SEKALI.
+
+   Pustaka ini membaca `element.clientWidth`, menyesuaikan ukuran video
+   sendiri, lalu memposisikan overlay memakai angka yang sama. Ia berasumsi
+   video tampil persis seukuran yang ia hitung. Setiap aturan CSS yang
+   mengubah ukuran tampil video — `aspect-square` pada wadah, `width: 100%`,
+   maupun `height: auto` — membuat overlay dan video tidak lagi sepadan, dan
+   kotak pindai tampil memanjang ke salah satu arah.
+
+   Jadi di sini video hanya dirapikan tampilannya, tanpa menyentuh dimensi.
+   object-fit juga TIDAK dipakai: ia memotong gambar tanpa memberi tahu
+   overlay, jadi kotak pindai akan menunjuk area yang berbeda dari yang
+   sebenarnya dibaca — salah yang lebih berbahaya daripada sekadar jelek. */
+.gjr-pemindai video {
+  display: block;
+  margin: 0 auto;
+}
+
+/* Leaflet popup mengikuti tema. */
 .leaflet-popup-content-wrapper {
-  background: #15392e;
-  color: #f6f3ea;
+  background: var(--surface);
+  color: var(--ink);
   border-radius: 12px;
+  box-shadow: 0 4px 20px -6px rgba(14, 42, 33, .3);
 }
 .leaflet-popup-tip {
-  background: #15392e;
+  background: var(--surface);
 }
 .leaflet-container a.leaflet-popup-close-button {
-  color: #f6f3ea;
+  color: var(--ink-faint);
 }
+.leaflet-container a.leaflet-popup-close-button:hover {
+  color: var(--ink);
+}
+/* ───────────────────────────────────────────────────────────────────────────
+   LATAR PETA DIREDAM
+
+   Gaya bawaan OpenStreetMap dibuat untuk dibaca sendirian: jalan merah muda,
+   air biru terang, taman hijau pekat. Di dalam aplikasi ini ia bertabrakan
+   dengan palet krem-sage yang tenang, dan — lebih penting — ia BEREBUT
+   PERHATIAN dengan hal yang sebenarnya ingin dilihat orang: titik pohonnya.
+
+   Penyaring ini meredam ubin ke abu-abu kehangatan yang mendekati --surface-sub,
+   sehingga peta jadi konteks, bukan isi. Inilah sebabnya CARTO Positron ada
+   dan laku dipakai di peta data; bedanya ini tidak butuh kunci API.
+
+   Penting: filter dipasang di .leaflet-tile-pane SAJA. Penanda pohon hidup di
+   .leaflet-marker-pane dan .leaflet-overlay-pane, jadi warnanya tidak ikut
+   diredam — latar mundur, data maju. Kalau filter dipasang di .leaflet-container,
+   penandanya ikut pudar dan seluruh gunanya hilang. */
+.leaflet-tile-pane {
+  filter: saturate(0.4) sepia(0.15) brightness(1.04) contrast(0.92);
+}
+
+/* Mode gelap MEMBALIK ubin, bukan meredupkannya. Sebelumnya hanya
+   brightness(0.75), dan meredupkan peta yang dasarnya putih hanya menghasilkan
+   abu-abu — bidang terang yang menyilaukan di tengah antarmuka hijau tua.
+   invert(1) hue-rotate(180deg) adalah cara baku membuat peta gelap dari ubin
+   terang: inversi menggelapkan daratan, lalu rotasi rona 180° mengembalikan
+   warna jalan dan air ke rona aslinya setelah terbalik. */
+html.dark .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.88) saturate(0.45);
+}
+
+/* Latar peta sebelum ubin selesai dimuat. Bawaan Leaflet #ddd — abu-abu dingin
+   yang terbaca seperti halaman rusak. Memakai warna aplikasi membuat jeda
+   pemuatan terlihat disengaja, bukan gagal.
+
+   Selektornya digandakan dengan sengaja. CSS Leaflet datang sebagai chunk
+   terpisah yang dimuat BELAKANGAN bersama komponen peta, jadi pada kekhususan
+   yang sama ia selalu menang. Menggandakan kelas menaikkan kekhususan tanpa
+   perlu !important. */
+.leaflet-container.leaflet-container {
+  background: var(--surface-sub);
+}
+
+/* Kontrol zoom bawaan Leaflet: kotak putih bergaris hitam, satu-satunya
+   elemen di layar yang tidak mengikuti bahasa visual aplikasi. */
+.leaflet-touch .leaflet-bar,
+.leaflet-bar {
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  box-shadow: 0 2px 10px -4px rgba(14, 42, 33, .25);
+  overflow: hidden;
+}
+/* Kelas digandakan di sini juga: aturan Leaflet `.leaflet-bar a` punya
+   kekhususan yang sama dan dimuat belakangan, jadi tanpa ini tombol zoom tetap
+   putih — kotak putih menyolok di atas peta gelap. */
+.leaflet-bar.leaflet-bar a {
+  background: var(--surface);
+  color: var(--ink-muted);
+  border-bottom-color: var(--line);
+}
+.leaflet-bar.leaflet-bar a:hover {
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+
+/* Atribusi WAJIB terlihat — lisensi OSM melarang menyembunyikannya. Yang boleh
+   diatur hanya seberapa tenang tampilannya, bukan ada atau tidaknya. */
+.leaflet-control-attribution {
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  color: var(--ink-faint);
+  font-size: 10px;
+  border-radius: 8px 0 0 0;
+}
+/* Kelas digandakan: CSS Leaflet dimuat belakangan dan menang pada
+   kekhususan yang sama, sehingga tautannya tetap biru bawaan (#0078A8)
+   yang terukur 3,3 di atas atribusi terang. */
+.leaflet-control-attribution.leaflet-control-attribution a {
+  color: #30514a;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   4. MODE PRESENTASI
+   Kelas .presenting dipasang di <html> oleh PresentationContext.
+   ═══════════════════════════════════════════════════════════════════════════ */
+html.presenting {
+  font-size: 17px;                 /* seluruh skala rem ikut membesar */
+}
+html.presenting body {
+  overflow: hidden;                /* satu slide penuh, tanpa scroll halaman */
+}
+@media print {
+  html.presenting { font-size: 15px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   4b. CETAK SATU ELEMEN
+   Dipakai CertificateModal.jsx dan GenerateQrPage.jsx untuk mencetak hanya
+   satu elemen (sertifikat / label QR) tanpa sisa UI di sekitarnya.
+   Sebelumnya masing-masing menulis <style> inline sendiri dengan aturan
+   visibility yang identik — sekarang satu sumber, komponen tinggal menambah
+   class `print-area` + satu modifier untuk posisi/ukurannya sendiri.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media print {
+  body * { visibility: hidden; }
+  .print-area, .print-area * { visibility: visible; }
+
+  .print-area--certificate {
+    position: fixed; left: 0; top: 0; width: 100vw; height: 100vh;
+    margin: 0; padding: 2rem; border-width: 12px !important;
+  }
+  .print-area--label {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    border: 2px solid #15392e !important;
+  }
+
+  /* Lembar label QR massal (BulkQrPage).
+     SENGAJA `absolute`, bukan `fixed` seperti dua modifier di atas: elemen
+     fixed hanya tercetak di halaman pertama, jadi label ke-13 dan seterusnya
+     akan hilang tanpa pesan apa pun. Absolute mengalir ke halaman berikutnya. */
+  .print-area--sheet {
+    position: absolute; left: 0; top: 0; width: 100%;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 6mm;
+    margin: 0; padding: 0;
+  }
+  .gjr-qr-label {
+    display: flex; flex-direction: column; align-items: center; gap: 2mm;
+    padding: 3mm; border: 1.5pt solid #15392e; border-radius: 3mm;
+    /* Satu label tidak boleh terpotong oleh batas halaman: separuh QR tidak
+       bisa dipindai sama sekali. */
+    break-inside: avoid; page-break-inside: avoid;
+  }
+  .gjr-qr-label__id   { font-family: ui-monospace, monospace; font-size: 9pt; font-weight: 700; color: #15392e; margin: 0; }
+  .gjr-qr-label__sub  { font-size: 7pt; color: #4a4a4a; margin: 0; text-align: center; }
+
+  /* Lembar daftar sertifikat buyer: mengalir normal ke bawah, beda dengan
+     .print-area--label yang satu label di tengah halaman. */
+  .print-area--sheet-list {
+    position: absolute; left: 0; top: 0; width: 100%;
+    margin: 0; padding: 0; border: none !important; box-shadow: none !important;
+  }
+  .print-area--sheet-list table { font-size: 9pt; }
+  .print-area--sheet-list tr { break-inside: avoid; page-break-inside: avoid; }
+
+  @page { margin: 10mm; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   5. GELEMBUNG CLUSTER PETA
+   Digambar lewat L.divIcon di ClusteredTreeMarkers.jsx, jadi kelasnya harus
+   global — Tailwind tidak menjangkau markup yang disisipkan Leaflet.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.gjr-cluster-wrap { background: none; border: none; }
+.gjr-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  /* Warna kondisi DIGELAPKAN sebelum dipakai sebagai latar.
+     var(--c) adalah warna status apa adanya, dan di tema gelap --good
+     sengaja cerah supaya terbaca sebagai teks — tapi sebagai LATAR untuk
+     angka putih 12px hasilnya cuma rasio 2,71. Mencampurnya ke hijau tua
+     mempertahankan rona statusnya sambil menaikkan rasio ke 4,9.
+     Hijau tuanya ditulis literal, bukan var(--ink): --ink membalik jadi
+     warna terang di tema gelap, yang justru akan memperburuk keadaan. */
+  background: color-mix(in srgb, var(--c) 55%, #0e2a21);
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  border: 2px solid var(--surface);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 25%, transparent);
+  cursor: pointer;
+  transition: transform .12s ease;
+}
+.gjr-cluster:hover { transform: scale(1.08); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   6. TRANSISI ANTAR HALAMAN
+   CSS murni — tidak perlu framer-motion untuk sesuatu sesederhana ini.
+   Dipicu lewat key={pathname} di AppShell, jadi animasinya jalan ulang
+   setiap kali rute berganti. @media reduced-motion di atas sudah memangkas
+   durasinya, tapi ditegaskan lagi di sini supaya niatnya terbaca.
+   ═══════════════════════════════════════════════════════════════════════════ */
+/* PENTING — jangan menambahkan transform (atau filter / backdrop-filter /
+   perspective / will-change) ke animasi ini.
+   Elemen dengan transform non-`none` menjadi containing block untuk seluruh
+   keturunan `position: fixed`. Animasi ini dipasang pada <main> AppShell, yang
+   membungkus seluruh isi halaman — termasuk 11 modal/drawer yang memakai
+   `fixed inset-0`. Dengan transform di sini, overlay mereka mengukur diri
+   terhadap <main>, bukan layar: latar gelapnya hanya menutupi area konten dan
+   panelnya melenceng (terlihat di halaman Sertifikat).
+   Geseran 6px-nya nyaris tak terasa, sedangkan akibatnya menyentuh setiap
+   modal di aplikasi — jadi ditukar dengan pudar saja. */
+@keyframes gjr-page-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.gjr-page {
+  animation: gjr-page-in .22s cubic-bezier(.22, .61, .36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  /* Transisi halaman kini murni opacity (transform-nya sudah dicabut — lihat
+     catatan di atas keyframes), jadi tidak ada gerak yang perlu dimatikan.
+     Dulu dimatikan total karena masih mengandung geseran 6px. Dibiarkan
+     berjalan supaya perpindahan halaman tetap terasa mengalir, konsisten
+     dengan modal & toast yang juga tetap memudar. */
+  .gjr-page { animation: gjr-page-in .22s cubic-bezier(.22, .61, .36, 1) both !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   7. HALAMAN MASUK — lapisan visual
+   Motifnya LINGKARAN TAHUN POHON, bukan hiasan acak: lingkaran tahun adalah
+   catatan pertumbuhan dan penimbunan biomassa sebuah pohon — persis yang
+   diukur sistem ini (diameter → biomassa → karbon). Jadi latarnya bercerita
+   tentang isi aplikasinya, bukan sekadar gradien yang kebetulan enak dilihat.
+   Semua gerakan lambat dan beropasitas rendah supaya jadi suasana, bukan
+   perebut perhatian. @media reduced-motion di bagian atas berkas sudah
+   mematikan seluruhnya untuk yang membutuhkan.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Masuk berurutan: tiap elemen mengatur jedanya lewat --d.
+   Blur 10px → 0 adalah inti kesannya: elemennya seperti MENGENDAP menjadi
+   fokus, bukan sekadar naik. Tanpa itu gerakannya terbaca sebagai "geser
+   biasa"; dengan itu terasa seperti lensa yang mengunci fokus.
+   Easing-nya easeOutExpo (.16,1,.3,1) — melesat di awal lalu mendarat sangat
+   panjang dan pelan. Kurva inilah yang membedakan animasi terasa mahal atau
+   terasa seperti transisi bawaan. */
+@keyframes gjr-rise {
+  from { opacity: 0; transform: translateY(18px); filter: blur(10px); }
+  to   { opacity: 1; transform: none;             filter: blur(0);    }
+}
+.gjr-rise {
+  animation: gjr-rise .95s cubic-bezier(.16, 1, .3, 1) both;
+  animation-delay: var(--d, 0ms);
+  /* Sedikit lebih tajam saat dianimasikan, mencegah teks tampak berkabut di
+     layar non-retina selama blur berjalan. */
+  will-change: opacity, transform, filter;
+}
+
+/* Judul besar. Kini memakai Work Sans — keluarga yang sama dengan isi
+   halaman — mengikuti rancangan PKM yang tidak memakai serif sama sekali.
+
+   letter-spacing DILONGGARKAN dari -0.02em ke -0.012em. Angka lama disetel
+   untuk Libre Baskerville, yang huruf-hurufnya lebar sehingga judul besar
+   terasa renggang tanpa ditarik rapat. Work Sans sudah lebih sempit; tarikan
+   sekuat itu membuat hurufnya saling menempel pada judul besar.
+
+   font-optical-sizing dan font-variation-settings tetap TIDAK ADA di sini:
+   keduanya milik Fraunces (sumbu SOFT / WONK / opsz) yang pernah dipakai dulu.
+   Work Sans hanya punya sumbu bobot, jadi deklarasi itu tidak berpengaruh
+   apa-apa dan hanya menyesatkan orang yang membacanya nanti. */
+.gjr-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.012em;
+}
+
+/* Cahaya yang bergeser pelan — meniru sinar yang menembus tajuk */
+@keyframes gjr-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(3%, -2%, 0) scale(1.08); }
+}
+.gjr-drift      { animation: gjr-drift 22s ease-in-out infinite; }
+.gjr-drift-slow { animation: gjr-drift 34s ease-in-out infinite reverse; }
+
+/* Lingkaran tahun berputar sangat lambat (satu putaran ± 4 menit) */
+@keyframes gjr-rings {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.gjr-rings { animation: gjr-rings 240s linear infinite; transform-origin: center; }
+
+/* Kilau menyapu tombol saat disorot */
+@keyframes gjr-sheen {
+  from { transform: translateX(-120%) skewX(-18deg); }
+  to   { transform: translateX(320%)  skewX(-18deg); }
+}
+.gjr-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 45%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.22), transparent);
+  transform: translateX(-120%) skewX(-18deg);
+  pointer-events: none;
+}
+.gjr-sheen:hover::after { animation: gjr-sheen .9s ease-out; }
+
+/* Butiran halus — memberi kedalaman supaya bidang gelap tidak terasa datar//
+   "digital". Dibangkitkan SVG feTurbulence, jadi tanpa berkas gambar. */
+.gjr-grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .16;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Panel akun demo membuka dengan tinggi yang mengalir, bukan meloncat */
+@keyframes gjr-expand {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: none; }
+}
+.gjr-expand { animation: gjr-expand .28s cubic-bezier(.22, .61, .36, 1) both; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   8. PERGANTIAN TEMA — sapuan lingkaran
+   Mengganti class `dark` membalik SEMUA custom property sekaligus, dan custom
+   property tidak bisa ditransisikan. Hasilnya seluruh layar berkedip dalam
+   satu frame — itu yang terasa kasar.
+   Solusinya bukan menghaluskan warnanya satu per satu (mustahil untuk ratusan
+   elemen), melainkan memotret layar lama, menaruh layar baru di atasnya, lalu
+   MENYINGKAP layar baru itu sebagai lingkaran yang membesar dari tombolnya.
+   Warna tiap elemen tetap berganti seketika — yang dianimasikan adalah
+   seberapa luas tema baru sudah terlihat.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Bawaan View Transitions adalah silang-pudar. Dimatikan, karena dua layar
+   penuh yang saling memudar justru terlihat berkabut; yang diinginkan
+   potongan tegas berbentuk lingkaran. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+/* Tema baru digambar DI ATAS yang lama, lalu dipotong lingkaran oleh JS. */
+::view-transition-new(root) { z-index: 1; }
+::view-transition-old(root) { z-index: 0; }
+
+/* Jalur cadangan untuk browser tanpa View Transitions (Firefox lama, Safari
+   di bawah 18). Di sana class ini dipasang sesaat pada <html> supaya warna
+   masih berpindah dengan halus, walau tanpa sapuan lingkaran. */
+html.gjr-theme-fading,
+html.gjr-theme-fading *,
+html.gjr-theme-fading *::before,
+html.gjr-theme-fading *::after {
+  /* `filter` WAJIB ada di daftar ini. Peta Leaflet menggelap lewat
+     `html.dark .leaflet-tile-pane { filter: ... }`, bukan lewat warna — jadi
+     tanpa baris itu seluruh halaman memudar mulus sementara petanya menyentak
+     seketika. Satu elemen yang menyentak di tengah transisi membuat seluruh
+     perpindahan terasa patah, walau sisanya sudah halus.
+     `box-shadow` dan `outline-color` disertakan dengan alasan sama: bayangan
+     kartu dan cincin fokus ikut berubah antar tema.
+
+     Easing diganti ke easeInOutCubic (simetris). Kurva ease-out sebelumnya
+     bergerak paling cepat justru di awal, sehingga perpindahan terasa
+     "menyentak lalu melambat"; yang simetris berangkat dan mendarat sama
+     lembutnya. Durasinya 500ms — cukup untuk terbaca sebagai perpindahan,
+     belum terasa lamban. */
+  transition:
+    background-color 500ms cubic-bezier(.65, 0, .35, 1),
+    border-color     500ms cubic-bezier(.65, 0, .35, 1),
+    color            500ms cubic-bezier(.65, 0, .35, 1),
+    fill             500ms cubic-bezier(.65, 0, .35, 1),
+    stroke           500ms cubic-bezier(.65, 0, .35, 1),
+    filter           500ms cubic-bezier(.65, 0, .35, 1),
+    box-shadow       500ms cubic-bezier(.65, 0, .35, 1),
+    outline-color    500ms cubic-bezier(.65, 0, .35, 1) !important;
+}
+
+/* Scrollbar punya pseudo-element sendiri yang TIDAK tercakup oleh
+   `*::before` / `*::after` di atas, jadi tanpa baris ini ia satu-satunya
+   elemen yang tetap menyentak saat sisanya sudah memudar. */
+html.gjr-theme-fading ::-webkit-scrollbar-thumb {
+  transition: background-color 500ms cubic-bezier(.65, 0, .35, 1) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Tanpa sapuan, tanpa pudar — langsung berganti. */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) { animation: none !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   9. KOSAKATA ANIMASI — modal, drawer, toast, konten
+   Sebelumnya beberapa komponen memakai kelas `animate-in fade-in` dari plugin
+   tailwindcss-animate — plugin yang TIDAK terpasang di proyek ini. Kelas-kelas
+   itu tidak pernah menghasilkan apa pun (terbukti: nol kemunculan di CSS hasil
+   build), jadi setiap modal, drawer, dan toast selama ini muncul mendadak.
+   Ditulis sendiri di sini supaya tidak menambah dependensi.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes gjr-fade-in  { from { opacity: 0; } to { opacity: 1; } }
+
+/* Panel modal: naik sedikit sambil membesar dari 98% — memberi kesan "maju ke
+   depan" alih-alih sekadar muncul. Jaraknya sengaja kecil (10px) supaya terasa
+   sebagai penekanan, bukan sebagai benda yang terbang. */
+@keyframes gjr-panel-in {
+  from { opacity: 0; transform: translateY(10px) scale(.98); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes gjr-drawer-left  { from { transform: translateX(-100%); } to { transform: none; } }
+@keyframes gjr-drawer-right { from { transform: translateX(100%);  } to { transform: none; } }
+@keyframes gjr-toast-in {
+  from { opacity: 0; transform: translateY(12px) scale(.96); }
+  to   { opacity: 1; transform: none; }
+}
+
+.gjr-overlay-in { animation: gjr-fade-in     .2s  ease-out both; }
+.gjr-panel-in   { animation: gjr-panel-in    .28s cubic-bezier(.22, .61, .36, 1) both; }
+.gjr-drawer-l   { animation: gjr-drawer-left .3s  cubic-bezier(.22, .61, .36, 1) both; }
+.gjr-drawer-r   { animation: gjr-drawer-right .3s cubic-bezier(.22, .61, .36, 1) both; }
+.gjr-toast-in   { animation: gjr-toast-in    .26s cubic-bezier(.34, 1.4, .64, 1) both; }
+/* Konten yang menggantikan skeleton — pudar saja, tanpa gerak, supaya tabel
+   panjang tidak terlihat "melompat" saat datanya tiba. */
+.gjr-content-in { animation: gjr-fade-in .3s ease-out both; }
+
+/* Popup kalender DateField: turun 6px sambil membesar dari 97%, berpangkal di
+   tepi ATAS (transform-origin) supaya gerakannya terbaca sebagai "keluar dari
+   kolom isian di atasnya", bukan sebagai kotak yang mengembang di tempat.
+   Durasinya paling pendek di antara semua animasi di sini (.18s) karena
+   pemilih tanggal sering dibuka-tutup berkali-kali dalam satu pengisian form —
+   animasi yang panjang berubah jadi hambatan setelah pemakaian ketiga. */
+@keyframes gjr-pop-in {
+  from { opacity: 0; transform: translateY(-6px) scale(.97); }
+  to   { opacity: 1; transform: none; }
+}
+.gjr-pop-in {
+  transform-origin: top left;
+  animation: gjr-pop-in .18s cubic-bezier(.22, .61, .36, 1) both;
+}
+
+/* ── prefers-reduced-motion ────────────────────────────────────────────────
+   Aturan menyeluruh di bagian atas berkas mematikan SEMUA animasi jadi 0.01ms.
+   Itu terlalu kasar: preferensi ini soal GERAK — geseran, zoom, parallax —
+   yang memicu vertigo. Pudar opasitas tidak menggerakkan apa pun, sedangkan
+   antarmuka yang meloncat tanpa peralihan justru lebih sulit diikuti.
+   Jadi di sini animasi milik proyek dikecualikan, dan yang mengandung gerak
+   ditukar menjadi pudar murni. Selektor berkelas (0,1,0) mengalahkan `*`
+   (0,0,0), jadi pengecualian ini menang atas aturan menyeluruh itu. */
+@media (prefers-reduced-motion: reduce) {
+  .gjr-overlay-in,
+  .gjr-content-in { animation: gjr-fade-in .2s ease-out both !important; }
+
+  .gjr-panel-in,
+  .gjr-drawer-l,
+  .gjr-drawer-r,
+  .gjr-toast-in,
+  .gjr-pop-in     { animation: gjr-fade-in .2s ease-out both !important; }
+
+  /* Masuk berurutan di halaman login: jeda antar elemennya dipertahankan
+     (itu yang membuat urutannya terbaca), tapi geseran dan blur-nya dibuang. */
+  .gjr-rise {
+    animation: gjr-fade-in .45s ease-out both !important;
+    animation-delay: var(--d, 0ms) !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   10. ISI HALAMAN MASUK BERURUTAN
+   `gjr-page-in` hanya memudarkan <main> sebagai SATU blok — seluruh kartu,
+   tabel, dan grafik di dalamnya tetap muncul serentak. Kelas ini dipasang di
+   pembungkus isi halaman, lalu anak-anak langsungnya menyusul berurutan
+   sendiri lewat :nth-child — jadi tidak perlu menandai tiap elemen satu per
+   satu di 12 berkas halaman.
+
+   SENGAJA jauh lebih singkat dan tanpa blur, berbeda dari `gjr-rise` di
+   halaman login: login adalah pintu masuk yang dilihat sekali, sedangkan
+   dasbor dibuka berkali-kali sehari. Animasi semewah halaman login akan
+   terasa memperlambat kerja, bukan memuliakan. Langkah 55ms × 6 seksi ≈
+   0,75 detik — terbaca sebagai "menata diri", bukan sebagai menunggu.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@keyframes gjr-settle {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.gjr-stagger > * {
+  animation: gjr-settle .45s cubic-bezier(.16, 1, .3, 1) both;
+}
+.gjr-stagger > *:nth-child(1)  { animation-delay: 0ms;   }
+.gjr-stagger > *:nth-child(2)  { animation-delay: 55ms;  }
+.gjr-stagger > *:nth-child(3)  { animation-delay: 110ms; }
+.gjr-stagger > *:nth-child(4)  { animation-delay: 165ms; }
+.gjr-stagger > *:nth-child(5)  { animation-delay: 220ms; }
+.gjr-stagger > *:nth-child(6)  { animation-delay: 275ms; }
+.gjr-stagger > *:nth-child(7)  { animation-delay: 330ms; }
+.gjr-stagger > *:nth-child(8)  { animation-delay: 385ms; }
+/* Selebihnya masuk bersamaan — daftar yang sangat panjang tidak boleh membuat
+   elemen terakhir menunggu berdetik-detik hanya demi efek. */
+.gjr-stagger > *:nth-child(n+9) { animation-delay: 440ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  /* Urutannya dipertahankan (itu yang membuat alurnya terbaca), geserannya
+     dibuang. Selektor berkelas mengalahkan penindas `*` di bagian atas. */
+  .gjr-stagger > * { animation-name: gjr-fade-in !important; }
+}
+
+/* ── §11 Cahaya tepi mengikuti kursor ──────────────────────────────────────
+   Diadaptasi dari GlowingEffect (Aceternity / 21st.dev, dipakai di situs
+   Cursor). Aslinya menuliskan seluruh aturan ini sebagai arbitrary-variant
+   Tailwind sepanjang ratusan karakter di dalam className; di sini ditulis
+   sebagai CSS biasa supaya bisa dibaca, dan supaya tidak bergantung pada
+   Tailwind berhasil mengurai string mask yang panjang itu.
+
+   Caranya: sebuah cincin gradien digambar di ::after, lalu SEBAGIAN BESAR
+   cincin itu ditutup topeng (mask) berbentuk conic-gradient. Hanya satu juring
+   selebar --gjr-glow-spread yang lolos, dan juring itulah yang diputar
+   mengikuti kursor lewat --gjr-glow-start. Jadi yang bergerak bukan cahayanya,
+   melainkan lubang tempat cahaya itu terlihat.
+
+   mask-composite: intersect menggabungkan kedua lapisan mask sehingga hanya
+   bagian BINGKAI (border-box dikurangi padding-box) yang tampil — tanpa itu
+   seluruh bidang kartu ikut berpendar, bukan cuma tepinya. */
+.gjr-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.gjr-glow::after {
+  content: "";
+  position: absolute;
+  inset: calc(-1 * var(--gjr-glow-width, 1px));
+  border-radius: inherit;
+  border: var(--gjr-glow-width, 1px) solid transparent;
+  background: var(--gjr-glow-gradient);
+  /* fixed: gradiennya menempel pada viewport, bukan pada kartu, sehingga
+     beberapa kartu berdampingan tampak diterangi SATU sumber cahaya yang sama
+     alih-alih masing-masing punya pelangi sendiri. */
+  background-attachment: fixed;
+  opacity: var(--gjr-glow-active, 0);
+  transition: opacity .3s ease;
+
+  /* Prefiks -webkit- WAJIB ada: Safari — termasuk seluruh peramban di iOS —
+     belum mendukung mask-composite tanpa prefiks. Tanpa baris ini, cincin
+     gradien tampil UTUH di ponsel petugas lapangan: tepinya bukan berpendar
+     halus melainkan pelangi penuh yang menyala terus. */
+  -webkit-mask-image:
+    linear-gradient(#0000, #0000),
+    conic-gradient(
+      from calc((var(--gjr-glow-start, 0) - var(--gjr-glow-spread, 20)) * 1deg),
+      #00000000 0deg, #fff, #00000000 calc(var(--gjr-glow-spread, 20) * 2deg)
+    );
+  -webkit-mask-clip: padding-box, border-box;
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(#0000, #0000),
+    conic-gradient(
+      from calc((var(--gjr-glow-start, 0) - var(--gjr-glow-spread, 20)) * 1deg),
+      #00000000 0deg, #fff, #00000000 calc(var(--gjr-glow-spread, 20) * 2deg)
+    );
+  mask-clip: padding-box, border-box;
+  mask-composite: intersect;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Cahayanya TIDAK dimatikan — ia perubahan warna, bukan gerakan, dan justru
+     menandai bidang mana yang sedang aktif. Yang dihentikan cuma perpindahan
+     juring mengikuti kursor; itu diurus di sisi JavaScript (lihat
+     GlowingEffect.jsx), karena sudutnya digerakkan oleh rAF, bukan oleh CSS. */
+  .gjr-glow::after { transition: none; }
+}
+
+/* ── §12 Kartu yang timbul ─────────────────────────────────────────────────
+   Naik sedikit sambil memudar masuk, dipakai kartu login.
+
+   PERHATIKAN: TANPA animation-fill-mode.
+   Ini bukan kelalaian, ini justru intinya. `gjr-rise` di §7 memakai `both`,
+   yang MENAHAN keadaan awal (opacity 0) sampai animasinya benar-benar mulai —
+   dan kartu ini berisi kolom email, password, serta tombol Masuk. Kalau
+   animasinya tidak pernah jalan (tab dibuka di latar belakang, peramban
+   membatasi animasi, jendela sedang diminimalkan saat halaman dimuat), dengan
+   `both` seluruh form tinggal tak terlihat dan pengguna terkunci di luar
+   aplikasinya sendiri. Persis itu yang pernah terjadi di proyek ini.
+
+   Dengan fill-mode bawaan (`none`), keadaan diam elemen ini adalah keadaan
+   AKHIR — terlihat penuh. Animasi cuma lewat di atasnya. Tidak ada satu pun
+   jalur yang bisa meninggalkan form dalam keadaan tak terlihat.
+
+   Karena itu pula jedanya HARUS nol: dengan fill-mode none, jeda membuat
+   elemen tampil dalam keadaan akhir dulu, lalu meloncat balik ke keadaan awal
+   saat animasinya mulai. */
+@keyframes gjr-lift {
+  from { opacity: 0; transform: translateY(18px) scale(.985); }
+  to   { opacity: 1; transform: none; }
+}
+.gjr-lift { animation: gjr-lift .75s cubic-bezier(.22, .61, .36, 1); }
+
+@media (prefers-reduced-motion: reduce) {
+  /* Geserannya dibuang, pudarnya dipertahankan — dan tetap tanpa fill-mode. */
+  .gjr-lift { animation: gjr-fade-in .3s ease-out; }
+}
+
+/* ── §13 Kontrol bawaan peramban mengikuti tema ────────────────────────────
+   Satu properti, memperbaiki beberapa hal sekaligus.
+
+   Tanpa color-scheme, peramban selalu menggambar kontrol bawaannya dengan
+   asumsi latar TERANG. Yang kena: daftar <select> yang terbuka (Pilih Petani,
+   Pilih Pohon, Paket Kontribusi), tombol putar <input type="number">, batang
+   gulir, dan warna sorotan teks. Di mode gelap semuanya muncul sebagai kotak
+   putih menyilaukan di tengah antarmuka hijau tua.
+
+   Catatan: dulu alasan utama aturan ini adalah ikon kalender pada
+   <input type="date"> yang jadi gelap di atas gelap. Kolom tanggal sekarang
+   tidak memakai input bawaan lagi (lihat DateField.jsx), tapi aturan ini TETAP
+   diperlukan untuk kontrol-kontrol di atas. */
+:root { color-scheme: light; }
+.dark { color-scheme: dark; }
