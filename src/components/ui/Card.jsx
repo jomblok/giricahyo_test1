@@ -43,7 +43,13 @@ export function CardHeader({ icon: Icon, title, count, actions, level = 3, class
     <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 ${className}`}>
       <div className="flex items-center gap-2 min-w-0">
         {Icon && <Icon size={17} className="text-brand shrink-0" />}
-        <Judul className="font-semibold text-ink text-sm truncate">{title}</Judul>
+        {/* Membungkus, tidak dipotong. Di ponsel baris judul ini sudah selebar
+            kartu (flex-col), dan tetap ada judul yang lebih panjang dari itu —
+            "Basic Carbon Contribution — per Tingkat" terpotong tepat pada
+            "per Tingkat", bagian yang membedakannya dari kartu Basic Carbon
+            lain. min-w-0 diperlukan supaya anak fleks ini mau menyempit dan
+            membungkus, alih-alih mendorong hitungan di sebelahnya keluar. */}
+        <Judul className="min-w-0 break-words font-semibold text-ink text-sm">{title}</Judul>
         {count != null && (
           <span className="text-[11px] text-ink-faint tabular shrink-0">({count})</span>
         )}

@@ -36,14 +36,23 @@ export default function TreeMap({ height = 320, showControls = false }) {
   const { t, lang } = useLanguage();
   const [statusFilter, setStatusFilter] = useState("semua");
 
+  // `theme` SENGAJA jadi dependensi walau tidak disebut di dalam fungsinya:
+  // readVar membaca variabel CSS dari DOM, dan nilainya berubah begitu tema
+  // diganti. Tanpa `theme` di sini warna titik peta tertahan di tema lama.
+  // Lint tidak bisa melihat hubungan lewat DOM itu, jadi peringatannya keliru.
   const healthColor = useMemo(() => ({
     baik:   readVar("--chart-1", "#2f6e51"),
     sedang: readVar("--chart-2", "#c89b3c"),
     buruk:  readVar("--chart-5", "#a43828"),
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [theme]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const ringColor = useMemo(() => readVar("--surface", "#ffffff"), [theme]);
 
-  const all = trees ?? [];
+  // Dibungkus useMemo: `trees ?? []` membuat array BARU di setiap render saat
+  // trees masih kosong, sehingga dua useMemo di bawah tidak pernah memakai
+  // hasil simpanannya.
+  const all = useMemo(() => trees ?? [], [trees]);
   const counts = useMemo(() => {
     const c = { baik: 0, sedang: 0, buruk: 0 };
     for (const tr of all) {

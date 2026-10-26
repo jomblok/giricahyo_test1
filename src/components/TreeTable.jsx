@@ -54,7 +54,9 @@ export default function TreeTable({ trees: propTrees, farmerId, jenisDipilih, on
     [farmerId]
   );
 
-  const allTrees = propTrees ?? apiTrees ?? [];
+  // useMemo: `?? []` membuat array baru setiap render selama data belum ada,
+  // dan itu membatalkan useMemo `normalized` di bawahnya.
+  const allTrees = useMemo(() => propTrees ?? apiTrees ?? [], [propTrees, apiTrees]);
 
   // Normalisasi snake_case → camelCase, dibungkus useMemo supaya tidak
   // dihitung ulang di setiap ketikan pada kotak pencarian.
