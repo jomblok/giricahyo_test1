@@ -4,11 +4,11 @@ import './index.css'
 import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import { AuthProvider } from './lib/AuthContext.jsx'
-import { LanguageProvider } from './lib/LanguageContext.jsx'
-import { ThemeProvider } from './lib/ThemeContext.jsx'
-import { PeriodProvider } from './lib/PeriodContext.jsx'
-import { PresentationProvider } from './lib/PresentationContext.jsx'
-import { ToastProvider } from './lib/ToastContext.jsx'
+import { LanguageProvider } from './lib/LanguageProvider.jsx'
+import { ThemeProvider } from './lib/ThemeProvider.jsx'
+import { PeriodProvider } from './lib/PeriodProvider.jsx'
+import { PresentationProvider } from './lib/PresentationProvider.jsx'
+import { ToastProvider } from './lib/ToastProvider.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

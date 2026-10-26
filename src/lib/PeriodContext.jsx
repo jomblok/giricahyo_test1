@@ -7,13 +7,14 @@
 // Di sini rentangnya dihitung dari tahun berjalan, dan disediakan sekaligus
 // rentang periode SEBELUMNYA supaya kartu KPI bisa menghitung delta.
 
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext } from "react";
 
-const PeriodContext = createContext(null);
+// Provider-nya di PeriodProvider.jsx.
+export const PeriodContext = createContext(null);
 
 export const PERIOD_PRESETS = ["all", "this_year", "last_year", "last_3y"];
 
-function rangeFor(preset, now = new Date()) {
+export function rangeFor(preset, now = new Date()) {
   const y = now.getFullYear();
   switch (preset) {
     case "this_year": return { from: `${y}-01-01`,     to: `${y}-12-31`,     year: y };
@@ -24,7 +25,7 @@ function rangeFor(preset, now = new Date()) {
 }
 
 // Periode pembanding: satu langkah ke belakang dengan panjang yang sama.
-function previousOf(preset, now = new Date()) {
+export function previousOf(preset, now = new Date()) {
   const y = now.getFullYear();
   switch (preset) {
     case "this_year": return rangeFor("last_year", now);
@@ -32,36 +33,6 @@ function previousOf(preset, now = new Date()) {
     case "last_3y":   return { from: `${y - 5}-01-01`, to: `${y - 3}-12-31`, year: null };
     default:          return { from: null, to: null, year: null };
   }
-}
-
-export function PeriodProvider({ children }) {
-  const [preset, setPreset] = useState("all");
-  const [compare, setCompare] = useState(false);
-
-  const value = useMemo(() => {
-    const range = rangeFor(preset);
-    const previous = previousOf(preset);
-    return {
-      preset,
-      setPreset,
-      compare,
-      setCompare,
-      toggleCompare: () => setCompare((c) => !c),
-      range,
-      previous,
-      isAll: preset === "all",
-      // Dipakai langsung sebagai query param untuk endpoint yang mendukungnya.
-      params: range.from ? { from: range.from, to: range.to } : {},
-      // Penyaring sisi-klien untuk data yang sudah terlanjur di-fetch penuh.
-      matches(dateLike) {
-        if (!range.from || !dateLike) return true;
-        const d = String(dateLike).slice(0, 10);
-        return d >= range.from && d <= range.to;
-      },
-    };
-  }, [preset, compare]);
-
-  return <PeriodContext.Provider value={value}>{children}</PeriodContext.Provider>;
 }
 
 export function usePeriod() {

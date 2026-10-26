@@ -1,8 +1,9 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext } from "react";
 
-const LanguageContext = createContext();
+// Provider-nya di LanguageProvider.jsx.
+export const LanguageContext = createContext();
 
-const translations = {
+export const translations = {
   id: {
     // Navigation & General
     trees: "Inventaris Pohon",
@@ -573,11 +574,11 @@ const translations = {
     qr_step_preview: "Preview & Kalkulasi",
     qr_step_done: "QR Code Jadi",
     trees_available_for_adoption: "Pohon Tersedia untuk Diadopsi",
-    trees_available_for_adoption_desc: "Pohon-pohon ini belum memiliki sponsor. Jadilah pahlawan lingkungan dengan mengadopsi mereka!",
     catalog_showing: "Menampilkan",
     catalog_trees_unit: "pohon",
     catalog_show_more: "Tampilkan",
     catalog_more: "lagi",
+    trees_available_for_adoption_desc: "Pohon-pohon ini belum memiliki sponsor. Jadilah pahlawan lingkungan dengan mengadopsi mereka!",
     no_trees_available: "Belum ada pohon yang tersedia",
     all_trees_adopted: "Semua pohon telah diadopsi saat ini.",
     adopt_now: "Adopsi Sekarang",
@@ -1218,11 +1219,11 @@ const translations = {
     qr_step_preview: "Preview & Calculate",
     qr_step_done: "QR Code Ready",
     trees_available_for_adoption: "Trees Available for Adoption",
-    trees_available_for_adoption_desc: "These trees don't have a sponsor yet. Be an environmental hero and adopt one!",
     catalog_showing: "Showing",
     catalog_trees_unit: "trees",
     catalog_show_more: "Show",
     catalog_more: "more",
+    trees_available_for_adoption_desc: "These trees don't have a sponsor yet. Be an environmental hero and adopt one!",
     no_trees_available: "No trees available right now",
     all_trees_adopted: "All trees are currently adopted.",
     adopt_now: "Adopt Now",
@@ -1298,28 +1299,6 @@ const translations = {
     no_accounts_found: "No accounts found.",
   }
 };
-
-export function LanguageProvider({ children }) {
-  const [lang, setLang] = useState(() => localStorage.getItem("gjr_lang") || "id");
-
-  useEffect(() => {
-    localStorage.setItem("gjr_lang", lang);
-  }, [lang]);
-
-  const toggleLanguage = () => {
-    setLang((prev) => (prev === "id" ? "en" : "id"));
-  };
-
-  const t = (key) => {
-    return translations[lang]?.[key] || translations["id"]?.[key] || key;
-  };
-
-  return (
-    <LanguageContext.Provider value={{ lang, setLang, toggleLanguage, t }}>
-      {children}
-    </LanguageContext.Provider>
-  );
-}
 
 export function useLanguage() {
   return useContext(LanguageContext);
