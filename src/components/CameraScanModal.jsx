@@ -111,58 +111,6 @@ const qrboxPersegi = (lebarView, tinggiView) => {
   return { width: sisi, height: sisi };
 };
 
-/**
- * Membaca dimensi nyata elemen-elemen pemindai dan menampilkannya di layar.
- *
- * Ada karena bentuk kotak pindai hanya salah DI PONSEL, dan panel pengembangan
- * memblokir kamera — jadi tidak ada cara mengukurnya dari laptop. Menebak dari
- * kode sudah terbukti gagal berulang kali; ini menggantinya dengan angka.
- */
-function PengukurPemindai({ fase }) {
-  const [info, setInfo] = useState(null);
-
-  useEffect(() => {
-    const jam = setInterval(() => {
-      const wadah = document.getElementById(SCANNER_ELEMENT_ID);
-      const video = document.querySelectorAll("video");
-      const v = video[0];
-      const shaded = document.querySelector('[id*="shaded"]');
-      const bulat = (n) => Math.round(n);
-      setInfo({
-        jumlahVideo: video.length,
-        wadah: wadah ? `${bulat(wadah.clientWidth)}x${bulat(wadah.clientHeight)}` : "-",
-        videoAsli: v ? `${v.videoWidth}x${v.videoHeight}` : "-",
-        videoTampil: v ? `${bulat(v.getBoundingClientRect().width)}x${bulat(v.getBoundingClientRect().height)}` : "-",
-        kotak: shaded
-          ? `${bulat(shaded.getBoundingClientRect().width)}x${bulat(shaded.getBoundingClientRect().height)}`
-          : "(tidak ada)",
-      });
-    }, 700);
-    return () => clearInterval(jam);
-  }, []);
-
-  if (!info) return null;
-  const baris = [
-    ["fase", fase],
-    ["jumlah <video>", info.jumlahVideo],
-    ["wadah", info.wadah],
-    ["video asli", info.videoAsli],
-    ["video tampil", info.videoTampil],
-    ["kotak pindai", info.kotak],
-  ];
-
-  return (
-    <div className="absolute left-1 top-1 z-20 rounded-lg bg-black/80 px-2 py-1.5 font-mono-id text-[10px] leading-snug text-cream-50">
-      {baris.map(([k, v]) => (
-        <div key={k}>
-          <span className="text-cream-50/60">{k}: </span>
-          <span className={k === "jumlah <video>" && v !== 1 ? "text-gold-500" : ""}>{String(v)}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 export default function CameraScanModal({ onResult, onClose }) {
   const panelRef = useModalBehavior(true, onClose);
   // "starting" → sedang enumerate/inisialisasi
@@ -189,8 +137,6 @@ export default function CameraScanModal({ onResult, onClose }) {
   // Mencegah dua penggantian kamera berjalan bersamaan saat tombol ditekan
   // berkali-kali — balapan itulah yang dulu menumpuk elemen video.
   const sedangGanti = useRef(false);
-  // Pengukur geometri, dinyalakan lewat ?debug=1 di alamat.
-  const debug = typeof location !== "undefined" && /[?&]debug=1/.test(location.search);
   const [daftarKamera, setDaftarKamera] = useState([]);
 
   useEffect(() => {
@@ -501,14 +447,6 @@ export default function CameraScanModal({ onResult, onClose }) {
               id={SCANNER_ELEMENT_ID}
               className="w-full gjr-pemindai"
             />
-
-            {/* PENGUKUR — hanya muncul dengan ?debug=1 di alamat.
-                Dipasang di dalam modal yang SEBENARNYA, bukan halaman tiruan,
-                supaya angka yang terbaca memang milik komponen ini. Dipakai
-                untuk melacak kotak pindai yang bentuknya meleset di ponsel,
-                yang tidak bisa diukur dari laptop karena panel pengembangan
-                memblokir kamera. */}
-            {debug && <PengukurPemindai fase={phase} />}
 
             {/* Overlay: Spinner saat starting */}
             {phase === "starting" && (

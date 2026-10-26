@@ -56,14 +56,10 @@ function KatalogAdopsi({ trees, onPilih }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {trees.length > 0 ? (
           trees.map((tree) => {
-            // Endpoint asli backend pakai snake_case + farmer_name rata
-            // (konsisten dengan treeApi.list()); fallback mock lokal
-            // (lib/joins.js) pakai camelCase + objek farmer bersarang.
-            // Baca keduanya supaya kartu ini benar di kedua sumber data.
-            const healthStatus = tree.health_status ?? tree.healthStatus ?? "baik";
-            const co2EqKg = tree.co2_eq_kg ?? tree.co2EqKg;
-            const heightM = tree.height_m ?? tree.heightM;
-            const farmerName = tree.farmer_name ?? tree.farmer?.name;
+            const healthStatus = tree.health_status ?? "baik";
+            const co2EqKg = tree.co2_eq_kg;
+            const heightM = tree.height_m;
+            const farmerName = tree.farmer_name;
             const gambar = gambarJenis(tree.species);
             return (
             <Card key={tree.id} hoverable className="flex flex-col gap-4 overflow-hidden">

@@ -10,7 +10,8 @@
 // sedang dibuka — termasuk saat modal terbuka, tabel terisi, atau ponsel sedang
 // menampilkan keadaan yang sulit ditiru. Panel ini ikut ke mana pun.
 //
-// Dibuka dengan tombol melayang di pojok, atau Ctrl/Cmd + Shift + U.
+// Dibuka dengan Ctrl/Cmd + Shift + U, atau tombol melayang di pojok kalau
+// diaktifkan lewat ?audit=1 (lihat tombolDiminta).
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -23,9 +24,31 @@ const WARNA_PARAH = {
 };
 
 const KUNCI_TERPILIH = "gjr_audit_pemeriksa";
+const KUNCI_TOMBOL = "gjr_audit_tombol";
+
+// Tombol melayang TERSEMBUNYI secara bawaan.
+//
+// Semula ia selalu tampil di mode pengembangan. Tapi demo dan uji di ponsel
+// juga berjalan di mode pengembangan (`npm run dev`), sehingga tombol "UI" yang
+// tak berarti bagi penonton ikut melayang di setiap halaman — bahkan menutupi
+// atribusi peta di halaman publik pohon.
+//
+// Di laptop cukup Ctrl/Cmd+Shift+U. Di ponsel, yang tidak punya papan ketik,
+// buka sekali dengan ?audit=1 di alamat; pilihan itu diingat sampai ?audit=0.
+function tombolDiminta() {
+  try {
+    const q = new URLSearchParams(location.search).get("audit");
+    if (q === "1") localStorage.setItem(KUNCI_TOMBOL, "1");
+    if (q === "0") localStorage.removeItem(KUNCI_TOMBOL);
+    return localStorage.getItem(KUNCI_TOMBOL) === "1";
+  } catch {
+    return false;
+  }
+}
 
 export default function PanelAudit() {
   const [buka, setBuka] = useState(false);
+  const [tampilTombol] = useState(tombolDiminta);
   const [hasil, setHasil] = useState(null);
   const [sibuk, setSibuk] = useState(false);
   // Elemen yang sedang disorot hidup di ref: menyorot berarti mengubah style
@@ -132,6 +155,7 @@ export default function PanelAudit() {
   };
 
   if (!buka) {
+    if (!tampilTombol) return null;
     return createPortal(
       <button style={gaya.tombol} onClick={() => setBuka(true)} title="Audit tampilan (Ctrl+Shift+U)">
         UI
