@@ -222,7 +222,13 @@ export default function ManageCertificatesPage() {
           buyers={buyers ?? []}
           adoptions={adoptions}
           onClose={() => setShowForm(false)}
-          onSuccess={() => { setShowForm(false); refetch(); }}
+          // TIDAK menutup formulir. Dulu baris ini memanggil setShowForm(false),
+          // sehingga modal dilepas pada render yang sama dengan saat layar
+          // "Sertifikat Berhasil Dibuat" hendak tampil — nomor sertifikatnya
+          // tidak pernah terlihat. Kini layar itu juga satu-satunya tempat
+          // kata sandi awal pembeli baru diperlihatkan; tombol Tutup di sana
+          // yang menutup modal.
+          onSuccess={() => refetch()}
         />
       )}
 
@@ -258,6 +264,30 @@ function InfoBlock({ label, value, mono, highlight }) {
   );
 }
 
+// Kata sandi awal untuk akun pembeli yang dibuat dari formulir sertifikat.
+//
+// MENGGANTIKAN "buyer123" YANG DITULIS MATI. Dulu setiap pembeli baru yang
+// didaftarkan lewat sini memakai kata sandi yang sama — dan kata sandi itu
+// tercantum di repositori publik serta ikut terkirim di JavaScript produksi.
+// Siapa pun yang tahu email seorang pembeli bisa masuk ke akunnya.
+//
+// Abjadnya tanpa karakter yang mudah tertukar saat dibacakan atau ditulis
+// ulang (0/O, 1/l/I), karena admin akan meneruskannya ke pembeli. Diulang
+// sampai memuat huruf DAN angka: aturan Password::min(8)->letters()->numbers()
+// di AccountController menolak sisanya, dan 12 karakter acak dari abjad ini
+// tidak memuat angka sama sekali sekitar 16% dari waktu.
+//
+// crypto.getRandomValues tersedia juga di konteks tidak aman (http:// lewat
+// LAN), tidak seperti crypto.subtle.
+function kataSandiAcak(panjang = 12) {
+  const abjad = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+  for (;;) {
+    const acak = crypto.getRandomValues(new Uint32Array(panjang));
+    const hasil = Array.from(acak, (n) => abjad[n % abjad.length]).join("");
+    if (/[A-Za-z]/.test(hasil) && /\d/.test(hasil)) return hasil;
+  }
+}
+
 function NewCertificateModal({ trees, buyers, adoptions, onClose, onSuccess }) {
   const { t } = useLanguage();
   // Bug lama: handleSubmit sudah memanggil toast.success di bawah, tapi
@@ -278,6 +308,9 @@ function NewCertificateModal({ trees, buyers, adoptions, onClose, onSuccess }) {
   const [adoptedDate, setAdoptedDate]   = useState(new Date().toISOString().split("T")[0]);
   const [error, setError]           = useState("");
   const [success, setSuccess]       = useState(null);
+  // { email, sandi } akun pembeli yang baru dibuat — ditampilkan SEKALI di
+  // layar sukses, karena hanya di sinilah keduanya diketahui.
+  const [akunBaru, setAkunBaru]     = useState(null);
   const [loading, setLoading]       = useState(false);
 
   const isBasicCarbon = packageName === BASIC_CARBON_LABEL;
@@ -302,13 +335,19 @@ function NewCertificateModal({ trees, buyers, adoptions, onClose, onSuccess }) {
     if (mode === "new") {
       if (!newBuyerName.trim()) { setError("Nama buyer baru wajib diisi."); return; }
       try {
+        // Email bawaan tetap dibuat kalau dikosongkan, tapi kini IKUT
+        // DITAMPILKAN di layar sukses — dulu ia dibuat diam-diam, sehingga
+        // pembeli tidak pernah tahu alamat untuk masuk ke akunnya sendiri.
+        const email = newBuyerEmail.trim() || `buyer_${Date.now()}@giricahyo.id`;
+        const sandi = kataSandiAcak();
         const { account } = await accountApi.create({
           name:     newBuyerName.trim(),
-          email:    newBuyerEmail.trim() || `buyer_${Date.now()}@giricahyo.id`,
-          password: "buyer123",
+          email,
+          password: sandi,
           role:     "buyer",
         });
         finalBuyerId = account.linked_id;
+        setAkunBaru({ email, sandi });
       } catch (e) {
         setError(e.message); return;
       }
@@ -372,6 +411,19 @@ function NewCertificateModal({ trees, buyers, adoptions, onClose, onSuccess }) {
           <p className="font-bold text-ink mb-1">Sertifikat Berhasil Dibuat</p>
           <p className="font-mono-id text-warn text-sm mb-4">{success.certificate_no}</p>
           <p className="text-xs text-ink-muted mb-5">Sertifikat ini sekarang dapat dilihat di dashboard masing-masing.</p>
+          {akunBaru && (
+            <div className="mb-5 rounded-xl border border-line bg-surface-sub p-3 text-left">
+              <p className="text-xs font-semibold text-ink mb-2">Akun pembeli baru</p>
+              <p className="text-[11px] text-ink-muted">Email</p>
+              <p className="font-mono-id text-sm text-ink break-all select-all mb-2">{akunBaru.email}</p>
+              <p className="text-[11px] text-ink-muted">Kata sandi awal</p>
+              <p className="font-mono-id text-sm text-ink select-all mb-2">{akunBaru.sandi}</p>
+              <p className="text-[11px] text-warn">
+                Catat dan teruskan ke pembeli sekarang — kata sandi ini tidak
+                disimpan di mana pun dan tidak akan ditampilkan lagi.
+              </p>
+            </div>
+          )}
           <button onClick={onClose} className="w-full bg-forest-900 text-cream-50 text-sm font-semibold rounded-xl py-2.5 hover:bg-forest-800 transition-colors">Tutup</button>
         </div>
       </div>

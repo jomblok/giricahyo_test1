@@ -35,9 +35,22 @@ const DEMO_ACCOUNTS = [
   { short: "Buyer",      name: "PT Hijau Lestari",   email: "buyer@giricahyo.id", password: "buyer123",  role: "buyer",  desc: "Pendukung / pembeli karbon" },
 ];
 
-// Panel akun demo bisa dimatikan saat deploy sungguhan lewat .env frontend:
-//   VITE_SHOW_DEMO=false
-const SHOW_DEMO = import.meta.env.VITE_SHOW_DEMO !== "false";
+// Panel akun demo: MENYALA di mode pengembangan, MATI di build produksi.
+//
+// Dulu kebalikannya — menyala di mana pun kecuali seseorang ingat menyetel
+// VITE_SHOW_DEMO=false. Akibatnya build produksi mengirim email DAN kata sandi
+// admin di atas ke setiap pengunjung, di dalam berkas JavaScript yang bisa
+// dibaca siapa saja, lengkap dengan tombol sekali-klik untuk memakainya.
+// Pengaman yang bergantung pada "jangan lupa" pasti suatu hari terlupa.
+//
+// Kini produksi harus memintanya secara sadar dengan VITE_SHOW_DEMO=true
+// (misalnya deploy khusus pameran). Bila tidak diminta, Vite mengganti
+// ekspresi ini dengan `false` saat build, cabang JSX-nya dibuang, dan
+// DEMO_ACCOUNTS tidak ikut ke bundel sama sekali — terverifikasi dengan
+// mencari "admin123" di dist/.
+const SHOW_DEMO = import.meta.env.VITE_SHOW_DEMO
+  ? import.meta.env.VITE_SHOW_DEMO === "true"
+  : import.meta.env.DEV;
 
 // Dibekukan di lingkup modul: kalau ditulis sebagai literal inline di JSX,
 // tiap render menghasilkan array baru dan Velaris akan membangun ulang konteks
