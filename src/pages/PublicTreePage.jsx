@@ -6,6 +6,7 @@ import { treeApi } from "../lib/api";
 import { useToast } from "../lib/ToastContext";
 import { useLanguage } from "../lib/LanguageContext";
 import AddTreePhotoModal from "../components/AddTreePhotoModal";
+import HakCipta from "../components/HakCipta";
 import { MapContainer, TileLayer, CircleMarker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { formatNumber } from "../lib/format";
@@ -276,6 +277,8 @@ export default function PublicTreePage() {
             <ArrowLeft size={12} />Kembali ke Dashboard
           </Link>
         )}
+
+        <HakCipta gelap className="mt-8" />
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ import Velaris from "../components/ui/Velaris";
 import GlowingEffect from "../components/ui/GlowingEffect";
 import FloatingField from "../components/ui/FloatingField";
 import DrawLineText from "../components/ui/DrawLineText";
+import HakCipta from "../components/HakCipta";
 
 const ROLE_DOT = {
   admin:  "bg-cream-50",
@@ -571,6 +572,7 @@ export default function LoginPage() {
             </div>
           )}
         </div>
+        <HakCipta gelap className="relative mt-8 max-w-[27rem]" />
       </main>
     </div>
   );

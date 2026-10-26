@@ -665,9 +665,11 @@ export default function BuyerDashboardPage() {
 
         <KatalogAdopsi trees={availableTrees} onPilih={setPohonDiadopsi} />
 
-        <footer className="text-center text-[11px] text-ink-faint pt-4 pb-2">
+        {/* Ucapan terima kasih saja — nama aplikasi dan pemiliknya kini ada di
+            baris hak cipta AppShell tepat di bawahnya. */}
+        <p className="text-center text-[11px] text-ink-faint pt-4">
           {t("buyer_footer")}
-        </footer>
+        </p>
       </div>
 
       {/* Certificate Modal */}

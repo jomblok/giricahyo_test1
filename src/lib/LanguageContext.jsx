@@ -95,7 +95,6 @@ export const translations = {
     failed_load: "Gagal memuat data:",
     no_trees_status: "Tidak ada pohon dengan status ini.",
     unnamed: "Tanpa nama",
-    dashboard_footer: "Giricahyo Carbon Dashboard — Koperasi Griya Jati Rasa, Desa Giricahyo",
 
     // Farmer Dashboard Keys
     welcome: "Selamat datang,",
@@ -150,7 +149,8 @@ export const translations = {
     eq_motor_unit: "bulan",
     eq_electric: "Setara listrik rumah tangga selama",
     eq_electric_unit: "bulan",
-    buyer_footer: "Giricahyo Carbon Dashboard · Terima kasih atas dukungan Anda",
+    buyer_footer: "Terima kasih atas dukungan Anda",
+    copyright_rights: "Hak cipta dilindungi.",
 
     // TreeTable Keys
     of: "dari",
@@ -744,7 +744,6 @@ export const translations = {
     failed_load: "Failed to load data:",
     no_trees_status: "No trees with this status.",
     unnamed: "Unnamed",
-    dashboard_footer: "Giricahyo Carbon Dashboard — Griya Jati Rasa Cooperative, Giricahyo Village",
 
     // Farmer Dashboard Keys
     welcome: "Welcome,",
@@ -799,7 +798,8 @@ export const translations = {
     eq_motor_unit: "months",
     eq_electric: "Equivalent to household electricity for",
     eq_electric_unit: "months",
-    buyer_footer: "Giricahyo Carbon Dashboard · Thank you for your support",
+    buyer_footer: "Thank you for your support",
+    copyright_rights: "All rights reserved.",
 
     // TreeTable Keys
     of: "of",

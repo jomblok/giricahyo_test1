@@ -141,10 +141,6 @@ export default function FarmerDashboardPage() {
             onJenisChange={setJenisDipilih}
           />
         </section>
-
-        <footer className="text-center text-[11px] text-ink-faint pt-4 pb-2">
-          Giricahyo Carbon Dashboard — {farmer?.group_coop}
-        </footer>
       </div>
     </AppShell>
   );

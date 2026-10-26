@@ -9,6 +9,7 @@ import { useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import BottomNav from "./BottomNav";
+import HakCipta from "./HakCipta";
 import { usePresentation } from "../lib/PresentationContext";
 
 const COLLAPSE_KEY = "gjr_sidebar_collapsed";
@@ -61,6 +62,7 @@ export default function AppShell({ title, children, showPeriod = true, wide = fa
           className={`gjr-page px-4 md:px-6 py-6 pb-24 lg:pb-6 ${wide ? "" : "max-w-[1600px] mx-auto"}`}
         >
           {children}
+          <HakCipta className="mt-10" />
         </main>
       </div>
 

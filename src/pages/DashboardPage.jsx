@@ -156,10 +156,6 @@ export default function DashboardPage() {
           <SectionHeader>{t("farmer_data_salary")}</SectionHeader>
           <FarmerTable />
         </section>
-
-        <footer className="text-center text-[11px] text-ink-faint pt-4 pb-2">
-          {t("dashboard_footer")}
-        </footer>
       </div>
     </AppShell>
   );
