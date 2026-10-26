@@ -39,24 +39,24 @@ export default function PublicTreePage() {
   const toast = useToast();
   const { t } = useLanguage();
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    setPhotos([]);
-    try {
-      const res = await treeApi.getPublic(id);
+  // Mengambil data pohon. Ditulis sebagai rantai .then/.catch/.finally, bukan
+  // try/await: dengan begitu SETIAP setState pasti berada di dalam callback
+  // janji, sehingga aman dipanggil langsung dari effect di bawah tanpa render
+  // tambahan. Pada versi try/await, galat yang dilempar secara sinkron akan
+  // memanggil setError di dalam effect itu sendiri.
+  const ambil = useCallback(() => treeApi.getPublic(id)
+    .then((res) => {
       // Backend sekarang mengirim { tree, farmer, photos }. Pemeriksaan ini
       // dipertahankan apa adanya — ia memang sudah benar sejak dulu; yang dulu
       // salah adalah bentuk balasan backend-nya.
-      if (res.tree) {
-        setTree(res.tree);
-        setFarmer(res.farmer);
-        // Backend bisa menaruh foto di beberapa tempat; ambil yang mana pun ada.
-        setPhotos(res.photos ?? res.tree.photos ?? []);
-      } else {
-        throw new Error("Invalid response format");
-      }
-    } catch (e) {
+      if (!res.tree) throw new Error("Invalid response format");
+      setTree(res.tree);
+      setFarmer(res.farmer);
+      // Backend bisa menaruh foto di beberapa tempat; ambil yang mana pun ada.
+      setPhotos(res.photos ?? res.tree.photos ?? []);
+      setError(null);
+    })
+    .catch((e) => {
       // "TIDAK ADA" DAN "GAGAL DIMUAT" DIBEDAKAN. Halaman ini dibuka lewat
       // pindai QR, sering dari ponsel di jaringan yang tidak stabil. Dulu
       // setiap kegagalan ditampilkan sebagai "ID pohon ini tidak terdaftar" —
@@ -69,12 +69,21 @@ export default function PublicTreePage() {
       // yang tidak pernah cocok dengan ID asli GJR-L1-…, sehingga satu-satunya
       // efeknya adalah mengganti pesan galat yang jujur dengan "tidak ditemukan".
       setError({ tidakAda: e.status === 404, pesan: e.message });
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
+    })
+    .finally(() => setLoading(false)), [id]);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  // Untuk "Coba lagi" dan muat ulang sesudah petugas menyimpan: tampilkan
+  // keadaan memuat dulu, baru ambil. Dipanggil dari event handler, jadi reset
+  // di sini tidak menambah render apa pun.
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    await ambil();
+  }, [ambil]);
+
+  // Saat dipasang cukup ambil(): state awalnya sudah "memuat", karena halaman
+  // ini di-key per ID di App.jsx dan selalu dipasang segar untuk tiap pohon.
+  useEffect(() => { ambil(); }, [ambil]);
 
   // Panel petugas sebelumnya hanya memanggil alert() berisi teks placeholder.
   // Endpoint-nya sudah tersedia, jadi sekarang benar-benar menyimpan.

@@ -86,7 +86,17 @@ export default function PresentationView({ summary }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [active, go]);
 
-  useEffect(() => { if (active) setSlide(0); }, [active]);
+  // Kembali ke slide pertama setiap kali presentasi dibuka — disesuaikan SAAT
+  // RENDER, bukan di effect. Effect baru berjalan sesudah layar digambar, jadi
+  // slide terakhir dari presentasi sebelumnya sempat tampil satu frame sebelum
+  // melompat ke awal. Pola "simpan nilai prop sebelumnya, bandingkan saat
+  // render" adalah cara yang dianjurkan React untuk mereset state ketika
+  // sebuah prop berubah.
+  const [aktifSebelumnya, setAktifSebelumnya] = useState(active);
+  if (active !== aktifSebelumnya) {
+    setAktifSebelumnya(active);
+    if (active) setSlide(0);
+  }
 
   if (!active) return null;
   const current = slides[slide];

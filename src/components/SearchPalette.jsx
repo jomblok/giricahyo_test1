@@ -37,13 +37,21 @@ export default function SearchPalette({ open, onClose }) {
   const { data: buyers }  = useApi(() => (open && isAdmin ? buyerApi.list()  : Promise.resolve([])), [open, isAdmin]);
   const { data: adoptions } = useApi(() => (open && isAdmin ? adoptionApi.list() : Promise.resolve([])), [open, isAdmin]);
 
+  // Kotak pencarian dikosongkan SAAT RENDER ketika palet dibuka, bukan di
+  // effect — kalau di effect, palet sempat tampil satu frame dengan kueri dan
+  // hasil dari pencarian sebelumnya.
+  const [bukaSebelumnya, setBukaSebelumnya] = useState(open);
+  if (open !== bukaSebelumnya) {
+    setBukaSebelumnya(open);
+    if (open) { setQ(""); setCursor(0); }
+  }
+
+  // Fokus tetap di effect: ia menyentuh DOM, bukan state, dan memang harus
+  // menunggu setelah paint supaya keyboard ponsel ikut terbuka.
   useEffect(() => {
-    if (open) {
-      setQ(""); setCursor(0);
-      // fokus setelah paint supaya keyboard mobile ikut terbuka
-      const id = requestAnimationFrame(() => inputRef.current?.focus());
-      return () => cancelAnimationFrame(id);
-    }
+    if (!open) return;
+    const id = requestAnimationFrame(() => inputRef.current?.focus());
+    return () => cancelAnimationFrame(id);
   }, [open]);
 
   const results = useMemo(() => {
@@ -108,8 +116,6 @@ export default function SearchPalette({ open, onClose }) {
 
   const flat = useMemo(() => results.flatMap((g) => g.items), [results]);
 
-  useEffect(() => { setCursor(0); }, [q]);
-
   const go = (item) => { if (!item) return; onClose(); navigate(item.to); };
 
   const onKeyDown = (e) => {
@@ -144,7 +150,10 @@ export default function SearchPalette({ open, onClose }) {
             ref={inputRef}
             type="text"
             value={q}
-            onChange={(e) => setQ(e.target.value)}
+            // Kursor kembali ke hasil pertama di render yang SAMA dengan kueri
+            // barunya. Dulu direset lewat effect, sehingga satu render sempat
+            // memakai kursor lama yang bisa menunjuk hasil yang sudah hilang.
+            onChange={(e) => { setQ(e.target.value); setCursor(0); }}
             onKeyDown={onKeyDown}
             placeholder={t("search_placeholder")}
             aria-label={t("search_placeholder")}

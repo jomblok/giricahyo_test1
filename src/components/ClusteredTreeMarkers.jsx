@@ -11,8 +11,8 @@
 // dijatuhkan ke sel grid selebar CELL piksel. Sel berisi >1 pohon digambar
 // sebagai gelembung berangka; sel berisi 1 pohon digambar seperti biasa.
 
-import { useMemo, useState, useEffect } from "react";
-import { CircleMarker, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
+import { useCallback, useMemo, useSyncExternalStore } from "react";
+import { CircleMarker, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 
 const CELL = 56; // lebar sel grid dalam piksel layar
@@ -60,12 +60,26 @@ function clusterIcon(count, color) {
 
 export default function ClusteredTreeMarkers({ trees, healthColor, ringColor, renderPopup }) {
   const map = useMap();
-  const [zoom, setZoom] = useState(() => map.getZoom());
 
-  useMapEvents({ zoomend: () => setZoom(map.getZoom()) });
-
-  // Zoom bisa juga berubah lewat fitBounds dari luar komponen ini.
-  useEffect(() => { setZoom(map.getZoom()); }, [map, trees]);
+  // Zoom peta dibaca sebagai TOKO EKSTERNAL, bukan disalin ke state.
+  //
+  // Sebelumnya: useState + pendengar zoomend + useEffect yang menyalin ulang
+  // zoom setiap kali daftar pohon berganti. Effect itu bukan hiasan. FitToTrees
+  // dirender SEBELUM komponen ini, jadi effect-nya jalan lebih dulu; bila
+  // fitBounds mengubah zoom tanpa animasi, zoomend berbunyi sebelum pendengar
+  // di sini terpasang dan terlewat. Effect penyalin itulah yang menutup celah
+  // tersebut — dengan satu render ekstra memakai zoom lama.
+  //
+  // useSyncExternalStore menutup celah yang sama secara bawaan: setelah
+  // berlangganan, React membaca getSnapshot sekali lagi dan merender ulang
+  // bila nilainya sudah berubah di antara render dan langganan. Setiap
+  // render juga membaca zoom terkini, jadi berganti daftar pohon pun langsung
+  // memakai zoom yang benar.
+  const berlangganan = useCallback((ubah) => {
+    map.on("zoomend", ubah);
+    return () => map.off("zoomend", ubah);
+  }, [map]);
+  const zoom = useSyncExternalStore(berlangganan, () => map.getZoom());
 
   const clusters = useMemo(
     () => buildClusters(map, trees, zoom),

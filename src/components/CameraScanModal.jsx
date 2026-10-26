@@ -142,8 +142,10 @@ export default function CameraScanModal({ onResult, onClose }) {
   useEffect(() => {
     let cancelled = false;
 
-    setPhase("starting");
-    setErrMsg("");
+    // Fase TIDAK direset di sini. Saat pertama dipasang nilainya memang sudah
+    // "starting"; saat Coba lagi, handleRetry yang meresetnya. Mereset dari
+    // dalam effect berarti satu render lewat dulu dengan fase lama — layar
+    // galat sempat berkedip di atas elemen pemindai yang baru.
 
     async function startCamera() {
       // ── 1. Enumerate semua kamera yang tersedia ──────────────────────────
@@ -178,16 +180,14 @@ export default function CameraScanModal({ onResult, onClose }) {
       //
       // Bentuk fungsi menerima ukuran viewfinder yang BENAR-BENAR dipakai,
       // sehingga sisinya selalu sama panjang berapa pun rasio kameranya.
+      // Lihat qrboxPersegi di atas komponen.
 
-
-      // ── 3. Buat instance dan mulai scan dengan device ID konkret ─────────
-      //   Menggunakan device ID (bukan facingMode constraint) adalah cara
-      //   paling aman — tidak ada constraint yang bisa ditolak browser.
+      // ── 3. Buat instance dan mulai scan ──────────────────────────────────
       // JARING PENGAMAN terhadap video bertumpuk.
       //
       // Pembongkaran html5-qrcode berjalan ASINKRON (stop() mengembalikan
       // Promise), sementara effect ini langsung dijalankan ulang begitu
-      // retryKey berubah — misalnya saat pengguna menekan Ganti Kamera. Jadi
+      // retryKey berubah — saat pengguna menekan Coba lagi. Jadi
       // instance baru bisa lahir sementara yang lama belum selesai membersihkan
       // diri, dan keduanya menyisipkan <video> ke elemen yang sama.
       //
@@ -362,6 +362,10 @@ export default function CameraScanModal({ onResult, onClose }) {
     const inst = scannerRef.current;
     scannerRef.current = null;
     bongkarPemindai(inst);
+    // Direset bersama kenaikan retryKey, dalam satu render — bukan dari dalam
+    // effect yang baru berjalan sesudah render (lihat effect kamera).
+    setPhase("starting");
+    setErrMsg("");
     setRetryKey((k) => k + 1);
   }
 
