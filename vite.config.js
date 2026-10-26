@@ -1,3 +1,4 @@
+import { existsSync, readFileSync } from 'node:fs'
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
@@ -47,8 +48,8 @@ const csp = (asalApi) => [
   // script inline — penyerang paling jauh bisa mengubah tampilan, bukan
   // menjalankan kode. Kalau suatu saat 38 style itu dipindah ke kelas
   // Tailwind, baris ini boleh diperketat.
-  // fonts.googleapis.com dibutuhkan karena Work Sans, Libre Baskerville, dan
-  // JetBrains Mono dimuat lewat <link> di index.html.
+  // fonts.googleapis.com dibutuhkan karena Work Sans dan JetBrains Mono
+  // dimuat lewat <link> di index.html.
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
 
   // Berkas fontnya sendiri disajikan gstatic, bukan googleapis.
@@ -75,11 +76,6 @@ const csp = (asalApi) => [
 
   // Ke mana halaman boleh menembak permintaan jaringan.
   //
-  // PENTING SAAT DEPLOY: dua alamat localhost di bawah hanya berlaku untuk
-  // pengembangan. Ganti dengan asal API sungguhan (mis.
-  // https://api.giricahyo.id) sebelum go-live, kalau tidak dasbornya akan
-  // gagal memuat data — dan gagalnya tidak akan terlihat sebagai error CSP
-  // yang jelas bagi pengguna awam.
   // Diturunkan dari VITE_API_URL, BUKAN ditulis mati.
   //
   // Dulu baris ini menyebut localhost langsung, sehingga setiap deploy wajib
@@ -115,9 +111,11 @@ const headerKeamanan = (asalApi) => ({
  * biasanya diam-diam, dan baru ketahuan setelah produksi rusak. Dengan cara
  * ini konstanta CSP di atas adalah satu-satunya sumber kebenaran.
  *
- * Berkas `_headers` dikenali Netlify, Cloudflare Pages, dan Vercel. Untuk
- * nginx atau Apache, salin nilainya dari SECURITY.md yang mencetak kebijakan
- * yang sama.
+ * Berkas `_headers` dikenali Netlify dan Cloudflare Pages — TIDAK oleh Vercel.
+ * Catatan ini dulu menyebut Vercel juga, padahal Vercel hanya membaca header
+ * dari vercel.json. Akibatnya frontend yang di-deploy ke Vercel berjalan tanpa
+ * satu pun header di bawah. Untuk Vercel lihat periksaHeaderVercel(); untuk
+ * nginx atau Apache, salin nilainya dari SECURITY.md.
  */
 function tulisHeaderKeamanan(HEADER_KEAMANAN) {
   return {
@@ -129,6 +127,47 @@ function tulisHeaderKeamanan(HEADER_KEAMANAN) {
         '',
       )
       this.emitFile({ type: 'asset', fileName: '_headers', source: baris.join('\n') })
+    },
+  }
+}
+
+/**
+ * Menggagalkan build kalau vercel.json melenceng dari header di atas.
+ *
+ * vercel.json tidak bisa ditulis oleh build — Vercel membacanya SEBELUM build
+ * dimulai — jadi ia terpaksa jadi salinan kedua yang diketik tangan. Salinan
+ * kedua pasti melenceng suatu hari; pemeriksa ini mengubah "melenceng diam-diam"
+ * menjadi build yang gagal dengan pesan jelas, di laptop maupun di Vercel.
+ *
+ * CSP SENGAJA TIDAK DIPERIKSA dan belum ada di vercel.json. connect-src-nya
+ * harus memuat asal API produksi, yang baru diketahui saat deploy. CSP dengan
+ * asal yang salah memblokir SEMUA panggilan API tanpa galat yang terlihat —
+ * lebih buruk daripada tanpa CSP. Saat deploy: tambahkan header
+ * Content-Security-Policy ke vercel.json dengan nilai yang dicetak
+ * `npm run build` ke dist/_headers, setelah VITE_API_URL diisi alamat produksi.
+ */
+function periksaHeaderVercel(HEADER_KEAMANAN) {
+  return {
+    name: 'giricahyo-periksa-header-vercel',
+    apply: 'build',
+    buildStart() {
+      if (!existsSync('vercel.json')) return
+      // Sengaja tanpa try/catch: vercel.json yang rusak harus menggagalkan build.
+      const konfig = JSON.parse(readFileSync('vercel.json', 'utf8'))
+      const terpasang = {}
+      for (const blok of konfig.headers ?? []) {
+        for (const h of blok.headers ?? []) terpasang[h.key] = h.value
+      }
+      const beda = Object.entries(HEADER_KEAMANAN)
+        .filter(([kunci]) => kunci !== 'Content-Security-Policy')
+        .filter(([kunci, nilai]) => terpasang[kunci] !== nilai)
+        .map(([kunci]) => kunci)
+      if (beda.length) {
+        this.error(
+          `vercel.json tidak sama dengan headerKeamanan() di vite.config.js untuk: ${beda.join(', ')}. ` +
+          'Samakan keduanya — Vercel hanya membaca header dari vercel.json.'
+        )
+      }
     },
   }
 }
@@ -205,7 +244,12 @@ export default defineConfig(({ mode }) => {
   const HEADER_KEAMANAN = headerKeamanan(asalApiSemua);
 
   return {
-  plugins: [react(), tailwindcss(), tulisHeaderKeamanan(HEADER_KEAMANAN)],
+  plugins: [
+    react(),
+    tailwindcss(),
+    tulisHeaderKeamanan(HEADER_KEAMANAN),
+    periksaHeaderVercel(HEADER_KEAMANAN),
+  ],
 
   server: {
     headers: headerKeamananDev(asalApiSemua),
