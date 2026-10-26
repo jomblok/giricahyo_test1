@@ -1,10 +1,56 @@
 <!doctype html>
-<html lang="en">
+<html lang="id">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>giricahyo-dashboard</title>
+
+    <!-- PWA: aplikasi bisa dipasang ke layar utama dan dibuka tanpa sinyal.
+         Dibutuhkan untuk pemakaian di lapangan Gunungkidul, tempat sinyal
+         tidak bisa diandalkan. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#15392e" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Giricahyo" />
+
+    <!--
+      Font dimuat di sini, BUKAN lewat @import di index.css.
+      @import adalah cara paling lambat: browser harus mengunduh dan mengurai
+      index.css lebih dulu, baru menemukan baris @import-nya, baru mulai
+      mengambil fontnya — dua perjalanan bolak-balik yang berurutan. Dengan
+      <link> di <head>, permintaannya berangkat bersamaan dengan CSS-nya.
+      preconnect membuka koneksi ke server font lebih awal lagi (DNS + TLS
+      diselesaikan sambil menunggu), yang paling terasa di jaringan lambat —
+      dan dasbor ini dibuka dari lapangan di Gunungkidul, bukan dari kantor
+      berserat optik.
+
+      Work Sans diminta sebagai rentang variabel 400..800 sehingga satu
+      berkas melayani font-medium sampai font-extrabold, bukan lima berkas
+      terpisah.
+
+      HANYA ADA DUA KELUARGA DI SINI. Dulu ada tiga: Libre Baskerville
+      dipakai untuk judul (.gjr-display). Dilepas karena rancangan PKM
+      memakai satu keluarga sans di seluruh halaman, dan judul serif di
+      antara isi sans membuatnya terasa berasal dari dua aplikasi berbeda.
+
+      Pelepasan itu juga MENCABUT SEBUAH BATASAN yang perlu diketahui kalau
+      nanti ada yang ingin mengembalikannya. Libre Baskerville adalah font
+      statis yang hanya punya bobot 400 dan 700. Meminta 500/600/800 tidak
+      membuat peramban gagal; ia menebalkan sendiri huruf 400 dengan cara
+      mencorengnya (faux bold), dan hasilnya tampak kotor pada judul besar.
+      Karena itu dulu setiap pemakai .gjr-display dipaksa 400 atau 700 saja.
+      Work Sans variabel tidak punya masalah itu, jadi batasan tersebut kini
+      tidak berlaku — tapi ia akan hidup lagi bersama font statis apa pun
+      yang dipasang menggantikannya.
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400..800&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+
+    <title>Giricahyo Carbon</title>
   </head>
   <body>
     <div id="root"></div>

@@ -31,6 +31,15 @@ export function AuthProvider({ children }) {
     checkToken();
   }, []);
 
+  // Sesi habis di tengah pemakaian: api.js menyiarkan "gjr:unauthorized"
+  // ketika server membalas 401. Cukup kosongkan user — PrivateRoute yang
+  // memindahkan ke /login lewat router, tanpa memuat ulang browser.
+  useEffect(() => {
+    const onExpired = () => setUser(null);
+    window.addEventListener("gjr:unauthorized", onExpired);
+    return () => window.removeEventListener("gjr:unauthorized", onExpired);
+  }, []);
+
   // Login — kirim ke POST /api/auth/login
   async function login(email, password) {
     try {
@@ -72,8 +81,8 @@ export function AuthProvider({ children }) {
   if (loading) {
     // Tampilkan spinner sementara cek token — cegah flash halaman login
     return (
-      <div className="min-h-screen bg-forest-950 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-sage-400/30 border-t-sage-500 rounded-full animate-spin" />
+      <div className="min-h-screen bg-ground flex items-center justify-center" role="status" aria-label="Memuat">
+        <div className="w-8 h-8 border-2 border-brand/25 border-t-brand rounded-full animate-spin" />
       </div>
     );
   }

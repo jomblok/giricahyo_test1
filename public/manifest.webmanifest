@@ -1,0 +1,15 @@
+{
+  "name": "Giricahyo Carbon",
+  "short_name": "Giricahyo",
+  "description": "Sistem MRV karbon komunitas Koperasi Griya Jati Rasa, Desa Giricahyo.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f6f3ea",
+  "theme_color": "#15392e",
+  "lang": "id",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

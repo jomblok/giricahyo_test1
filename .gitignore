@@ -22,5 +22,18 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-".env" 
-".env" 
+
+# Variabel lingkungan.
+# SEBELUMNYA ditulis sebagai '".env"' dengan tanda kutip. Git membaca
+# tanda kutip sebagai bagian dari nama berkas, jadi polanya mencari berkas
+# bernama harfiah ".env" dan .env yang asli tidak pernah terabaikan --
+# siap ikut ter-commit begitu ada yang menaruh rahasia di sana.
+.env
+.env.*
+!.env.example
+
+# Skill agen (dipasang lewat `npx skills add`).
+# Bisa dipasang ulang kapan saja dari sumbernya dan tidak ada hubungannya
+# dengan kode aplikasi -- tidak perlu ikut ke repo PKM.
+.agents/
+.claude/

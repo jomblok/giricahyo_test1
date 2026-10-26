@@ -1,33 +1,43 @@
 import { FileCheck, Building2 } from "lucide-react";
-import { useDb } from "../lib/useDb";
-import { getAdminInsights } from "../lib/joins";
+import { useLanguage } from "../lib/LanguageContext";
+import { Card, CardHeader } from "./ui";
 
-export default function SupportSummaryCard() {
-  const { totalCertificates, totalBuyers } = useDb(() => getAdminInsights());
+function MiniStat({ icon: Icon, value, label, accent }) {
+  return (
+    <div className="bg-surface-sub rounded-xl p-4 text-center transition-colors">
+      <Icon size={18} className={`${accent} mx-auto mb-1.5`} />
+      <p className="text-2xl font-bold text-ink tabular">{value}</p>
+      <p className="text-[11px] text-ink-faint">{label}</p>
+    </div>
+  );
+}
+
+export default function SupportSummaryCard({ totalCertificates = 0, totalBuyers = 0 }) {
+  const { t } = useLanguage();
 
   return (
-    <div className="bg-white rounded-2xl border border-cream-100 p-5 shadow-sm h-full flex flex-col">
-      <div className="flex items-center gap-2 mb-4">
-        <FileCheck size={17} className="text-sage-600" />
-        <h3 className="font-semibold text-forest-950 text-sm">Dukungan Eksternal</h3>
-      </div>
+    <Card className="h-full flex flex-col">
+      <CardHeader icon={FileCheck} title={t("external_support")} />
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-cream-50 rounded-xl p-4 text-center">
-          <FileCheck size={18} className="text-gold-600 mx-auto mb-1.5" />
-          <p className="text-2xl font-bold text-forest-950 tabular">{totalCertificates}</p>
-          <p className="text-[11px] text-forest-700/50">Sertifikat Aktif</p>
-        </div>
-        <div className="bg-cream-50 rounded-xl p-4 text-center">
-          <Building2 size={18} className="text-sage-600 mx-auto mb-1.5" />
-          <p className="text-2xl font-bold text-forest-950 tabular">{totalBuyers}</p>
-          <p className="text-[11px] text-forest-700/50">Buyer/Donor</p>
-        </div>
+        <MiniStat
+          icon={FileCheck}
+          value={totalCertificates}
+          label={t("active_certificates_summary")}
+          accent="text-warn"
+        />
+        <MiniStat
+          icon={Building2}
+          value={totalBuyers}
+          label={t("buyer_donor")}
+          accent="text-brand"
+        />
       </div>
       <div className="flex-1" />
-      <p className="text-[11px] text-forest-700/45 mt-4">
-        Kelola sertifikat dukungan baru lewat menu{" "}
-        <span className="font-medium text-forest-700">Kelola Sertifikat</span> di atas.
+      <p className="text-[11px] text-ink-faint mt-4">
+        {t("manage_certificates_text")}{" "}
+        <span className="font-medium text-ink-muted">{t("manage_certificates_menu")}</span>{" "}
+        {t("above_text")}
       </p>
-    </div>
+    </Card>
   );
 }
