@@ -36,8 +36,20 @@ const INSTITUTIONAL_PACKAGES = {
 // menampilkan "hubungi koperasi". Jadi buyer baru tidak punya jalan sama
 // sekali untuk mengadopsi dari aplikasi: katalognya ada, tapi terkunci di
 // balik syarat yang justru hanya bisa dipenuhi lewat katalog itu.
+// Kartu katalog dimuat bertahap, 12 sekali tekan.
+//
+// Sebelumnya ke-179 pohon dirender sekaligus. Di ponsel kartunya tersusun
+// satu kolom, dan halamannya terukur 65.921 piksel — sekitar 80 layar
+// gulir sebelum mencapai bagian bawah. 12 dipilih karena habis dibagi 1, 2,
+// dan 3 kolom, jadi baris terakhir selalu penuh di ponsel, tablet, maupun
+// desktop.
+const KATALOG_PER_MUAT = 12;
+
 function KatalogAdopsi({ trees, onPilih }) {
   const { t } = useLanguage();
+  const [jumlahTampil, setJumlahTampil] = useState(KATALOG_PER_MUAT);
+  const terlihat = trees.slice(0, jumlahTampil);
+  const sisa = trees.length - terlihat.length;
 
   return (
     <section className="pt-6 border-t border-line">
@@ -55,7 +67,7 @@ function KatalogAdopsi({ trees, onPilih }) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {trees.length > 0 ? (
-          trees.map((tree) => {
+          terlihat.map((tree) => {
             const healthStatus = tree.health_status ?? "baik";
             const co2EqKg = tree.co2_eq_kg;
             const heightM = tree.height_m;
@@ -144,6 +156,21 @@ function KatalogAdopsi({ trees, onPilih }) {
           </div>
         )}
       </div>
+
+      {sisa > 0 && (
+        <div className="mt-6 flex flex-col items-center gap-2">
+          <p className="text-xs text-ink-muted">
+            {t("catalog_showing")} {terlihat.length} {t("of")} {trees.length} {t("catalog_trees_unit")}
+          </p>
+          <button
+            type="button"
+            onClick={() => setJumlahTampil((n) => n + KATALOG_PER_MUAT)}
+            className="rounded-xl border border-line bg-surface px-5 py-2.5 text-sm font-semibold text-ink hover:border-line-strong transition-colors"
+          >
+            {t("catalog_show_more")} {Math.min(KATALOG_PER_MUAT, sisa)} {t("catalog_more")}
+          </button>
+        </div>
+      )}
     </section>
   );
 }
