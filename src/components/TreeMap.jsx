@@ -139,19 +139,6 @@ export default function TreeMap({ height = 320, showControls = false }) {
               trees={visible}
               healthColor={healthColor}
               ringColor={ringColor}
-              renderPopup={(tree) => {
-                const status = tree.health_status ?? tree.healthStatus;
-                return (
-                  <div className="text-xs space-y-0.5 min-w-[140px]">
-                    <p className="font-bold font-mono-id">{tree.id}</p>
-                    <p>{tree.species}</p>
-                    <p className="opacity-60">{tree.farmer_name ?? tree.farmerName}</p>
-                    <p className="font-semibold" style={{ color: healthColor[status] }}>
-                      {(tree.co2_eq_kg ?? tree.co2EqKg ?? 0).toFixed(1)} kg CO₂e
-                    </p>
-                  </div>
-                );
-              }}
             />
           </MapContainer>
         )}

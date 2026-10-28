@@ -14,9 +14,17 @@
 import { useCallback, useMemo, useSyncExternalStore } from "react";
 import { CircleMarker, Marker, Popup, Tooltip, useMap } from "react-leaflet";
 import L from "leaflet";
+import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../lib/LanguageContext";
 
 const CELL = 56; // lebar sel grid dalam piksel layar
+
+// Gelembung berisi sebanyak ini atau kurang menampilkan DAFTAR pohonnya saat
+// diklik, bukan memperbesar peta. Alasannya bukan sekadar praktis: 9 pasang
+// pohon di data survei berbagi koordinat yang persis sama, sehingga gelembung
+// mereka tidak pernah pecah sebesar apa pun peta diperbesar — tanpa daftar,
+// pohon-pohon itu tidak bisa dibuka sama sekali dari peta.
+const BATAS_DAFTAR = 6;
 
 function buildClusters(map, trees, zoom) {
   const cells = new Map();
@@ -74,8 +82,10 @@ function ringkasKelompok(items) {
   return { kondisi, jenisTeratas, sisaJenis: Math.max(0, jenis.size - 3) };
 }
 
-export default function ClusteredTreeMarkers({ trees, healthColor, ringColor, renderPopup }) {
+export default function ClusteredTreeMarkers({ trees, healthColor, ringColor }) {
   const { t } = useLanguage();
+  const navigate = useNavigate();
+  const buka = (id) => navigate(`/pohon/${id}`);
   const map = useMap();
 
   // Zoom peta dibaca sebagai TOKO EKSTERNAL, bukan disalin ke state.
@@ -119,12 +129,22 @@ export default function ClusteredTreeMarkers({ trees, healthColor, ringColor, re
               color={ringColor}
               weight={2}
               fillOpacity={0.85}
+              // Klik langsung membuka halaman detail pohon. Dulu klik hanya
+              // memunculkan popup kecil, sehingga detail lengkapnya butuh
+              // langkah lain di luar peta. Ringkasan popup itu kini menjadi
+              // tooltip pratinjau saat disorot.
+              eventHandlers={{ click: () => buka(tree.id) }}
             >
-              {/* Sorot: identitas singkat. Klik: popup lengkap seperti biasa. */}
               <Tooltip direction="top" offset={[0, -8]}>
-                <span className="font-mono-id font-semibold">{tree.id}</span> · {tree.species}
+                <div className="text-xs leading-snug">
+                  <p><span className="font-mono-id font-semibold">{tree.id}</span> · {tree.species}</p>
+                  <p className="opacity-70">{tree.farmer_name ?? tree.farmerName}</p>
+                  <p className="font-semibold" style={{ color: healthColor[status] }}>
+                    {(tree.co2_eq_kg ?? tree.co2EqKg ?? 0).toFixed(1)} kg CO₂e
+                  </p>
+                  <p className="mt-0.5 opacity-60">{t("map_click_for_detail")}</p>
+                </div>
               </Tooltip>
-              <Popup>{renderPopup(tree)}</Popup>
             </CircleMarker>
           );
         }
@@ -137,16 +157,19 @@ export default function ClusteredTreeMarkers({ trees, healthColor, ringColor, re
                     : statuses.includes("sedang") ? "sedang"
                     : "baik";
 
+        const kecil = cluster.items.length <= BATAS_DAFTAR;
+        const r = ringkasKelompok(cluster.items);
+
         return (
           <Marker
             key={cluster.key}
             position={cluster.center}
             icon={clusterIcon(cluster.items.length, healthColor[worst])}
-            eventHandlers={{
-              // Klik gelembung → zoom ke isinya.
+            eventHandlers={kecil ? undefined : {
+              // Gelembung besar: klik → zoom ke isinya.
               click: () => {
                 const bounds = L.latLngBounds(
-                  cluster.items.map((t) => [Number(t.latitude), Number(t.longitude)])
+                  cluster.items.map((tr) => [Number(tr.latitude), Number(tr.longitude)])
                 );
                 map.fitBounds(bounds, { padding: [48, 48], maxZoom: 18 });
               },
@@ -156,26 +179,48 @@ export default function ClusteredTreeMarkers({ trees, healthColor, ringColor, re
                 hanya menampilkan angka, dan satu-satunya cara tahu isinya
                 adalah mengekliknya untuk memperbesar peta. */}
             <Tooltip direction="top" offset={[0, -18]}>
-              {(() => {
-                const r = ringkasKelompok(cluster.items);
-                return (
-                  <div className="text-xs leading-snug">
-                    <p className="font-bold">{cluster.items.length} {t("map_trees_unit")}</p>
-                    <p>
-                      {["baik", "sedang", "buruk"]
-                        .filter((k) => r.kondisi[k] > 0)
-                        .map((k) => `${r.kondisi[k]} ${t(`health_${k}`).toLowerCase()}`)
-                        .join(" · ")}
-                    </p>
-                    <p className="opacity-70">
-                      {r.jenisTeratas.map(([n, c]) => `${n} ${c}`).join(", ")}
-                      {r.sisaJenis > 0 ? ` +${r.sisaJenis}` : ""}
-                    </p>
-                    <p className="mt-0.5 opacity-60">{t("map_click_to_zoom")}</p>
-                  </div>
-                );
-              })()}
+              <div className="text-xs leading-snug">
+                <p className="font-bold">{cluster.items.length} {t("map_trees_unit")}</p>
+                <p>
+                  {["baik", "sedang", "buruk"]
+                    .filter((k) => r.kondisi[k] > 0)
+                    .map((k) => `${r.kondisi[k]} ${t(`health_${k}`).toLowerCase()}`)
+                    .join(" · ")}
+                </p>
+                <p className="opacity-70">
+                  {r.jenisTeratas.map(([n, c]) => `${n} ${c}`).join(", ")}
+                  {r.sisaJenis > 0 ? ` +${r.sisaJenis}` : ""}
+                </p>
+                <p className="mt-0.5 opacity-60">
+                  {t(kecil ? "map_click_for_list" : "map_click_to_zoom")}
+                </p>
+              </div>
             </Tooltip>
+
+            {/* Gelembung kecil: klik → daftar pohon, masing-masing langsung ke
+                halaman detailnya. Leaflet membuka Popup ini sendiri saat klik. */}
+            {kecil && (
+              <Popup>
+                <ul className="min-w-[180px] space-y-0.5">
+                  {cluster.items.map((tr) => {
+                    const st = tr.health_status ?? tr.healthStatus;
+                    return (
+                      <li key={tr.id}>
+                        <button
+                          type="button"
+                          onClick={() => buka(tr.id)}
+                          className="flex w-full items-center gap-2 rounded-md px-1.5 py-1 text-left text-xs hover:bg-black/5"
+                        >
+                          <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: healthColor[st] ?? healthColor.baik }} />
+                          <span className="font-mono-id font-semibold">{tr.id}</span>
+                          <span className="opacity-70">{tr.species}</span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </Popup>
+            )}
           </Marker>
         );
       })}

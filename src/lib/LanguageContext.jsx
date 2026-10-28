@@ -153,7 +153,9 @@ export const translations = {
     copyright_rights: "Hak cipta dilindungi.",
     map_trees_unit: "pohon",
     map_click_to_zoom: "Klik untuk memperbesar",
-    map_legend: "Angka di gelembung = jumlah pohon yang letaknya berdekatan. Warna = kondisi terburuk di kelompok itu. Sorot untuk rincian, klik untuk memperbesar.",
+    map_click_for_list: "Klik untuk melihat daftar pohon",
+    map_click_for_detail: "Klik untuk membuka detail pohon",
+    map_legend: "Angka di gelembung = jumlah pohon yang letaknya berdekatan. Warna = kondisi terburuk di kelompok itu. Sorot untuk rincian; klik titik untuk membuka pohon, klik gelembung untuk memperbesar atau melihat daftarnya.",
 
     // TreeTable Keys
     of: "dari",
@@ -805,7 +807,9 @@ export const translations = {
     copyright_rights: "All rights reserved.",
     map_trees_unit: "trees",
     map_click_to_zoom: "Click to zoom in",
-    map_legend: "Number in a bubble = trees growing close together. Colour = the worst condition in that group. Hover for details, click to zoom in.",
+    map_click_for_list: "Click to list these trees",
+    map_click_for_detail: "Click to open tree details",
+    map_legend: "Number in a bubble = trees growing close together. Colour = the worst condition in that group. Hover for details; click a dot to open the tree, click a bubble to zoom in or list its trees.",
 
     // TreeTable Keys
     of: "of",
