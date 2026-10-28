@@ -151,6 +151,9 @@ export const translations = {
     eq_electric_unit: "bulan",
     buyer_footer: "Terima kasih atas dukungan Anda",
     copyright_rights: "Hak cipta dilindungi.",
+    map_trees_unit: "pohon",
+    map_click_to_zoom: "Klik untuk memperbesar",
+    map_legend: "Angka di gelembung = jumlah pohon yang letaknya berdekatan. Warna = kondisi terburuk di kelompok itu. Sorot untuk rincian, klik untuk memperbesar.",
 
     // TreeTable Keys
     of: "dari",
@@ -800,6 +803,9 @@ export const translations = {
     eq_electric_unit: "months",
     buyer_footer: "Thank you for your support",
     copyright_rights: "All rights reserved.",
+    map_trees_unit: "trees",
+    map_click_to_zoom: "Click to zoom in",
+    map_legend: "Number in a bubble = trees growing close together. Colour = the worst condition in that group. Hover for details, click to zoom in.",
 
     // TreeTable Keys
     of: "of",

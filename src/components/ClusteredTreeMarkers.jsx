@@ -12,8 +12,9 @@
 // sebagai gelembung berangka; sel berisi 1 pohon digambar seperti biasa.
 
 import { useCallback, useMemo, useSyncExternalStore } from "react";
-import { CircleMarker, Marker, Popup, useMap } from "react-leaflet";
+import { CircleMarker, Marker, Popup, Tooltip, useMap } from "react-leaflet";
 import L from "leaflet";
+import { useLanguage } from "../lib/LanguageContext";
 
 const CELL = 56; // lebar sel grid dalam piksel layar
 
@@ -58,7 +59,23 @@ function clusterIcon(count, color) {
   });
 }
 
+// Ringkasan isi sebuah gelembung untuk tooltip-nya: berapa pohon per kondisi,
+// dan jenis apa yang paling banyak. Tanpa ini gelembung hanya menampilkan
+// angka, dan tidak ada cara mengetahui isinya selain memperbesar peta.
+function ringkasKelompok(items) {
+  const kondisi = { baik: 0, sedang: 0, buruk: 0 };
+  const jenis = new Map();
+  for (const t of items) {
+    const s = t.health_status ?? t.healthStatus;
+    if (s in kondisi) kondisi[s] += 1;
+    jenis.set(t.species, (jenis.get(t.species) ?? 0) + 1);
+  }
+  const jenisTeratas = [...jenis.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3);
+  return { kondisi, jenisTeratas, sisaJenis: Math.max(0, jenis.size - 3) };
+}
+
 export default function ClusteredTreeMarkers({ trees, healthColor, ringColor, renderPopup }) {
+  const { t } = useLanguage();
   const map = useMap();
 
   // Zoom peta dibaca sebagai TOKO EKSTERNAL, bukan disalin ke state.
@@ -103,6 +120,10 @@ export default function ClusteredTreeMarkers({ trees, healthColor, ringColor, re
               weight={2}
               fillOpacity={0.85}
             >
+              {/* Sorot: identitas singkat. Klik: popup lengkap seperti biasa. */}
+              <Tooltip direction="top" offset={[0, -8]}>
+                <span className="font-mono-id font-semibold">{tree.id}</span> · {tree.species}
+              </Tooltip>
               <Popup>{renderPopup(tree)}</Popup>
             </CircleMarker>
           );
@@ -111,7 +132,7 @@ export default function ClusteredTreeMarkers({ trees, healthColor, ringColor, re
         // Beberapa pohon → gelembung berangka. Warnanya mengikuti kondisi
         // TERBURUK di dalam kelompok, supaya kelompok bermasalah tidak
         // tersamarkan oleh mayoritas pohon sehat.
-        const statuses = cluster.items.map((t) => t.health_status ?? t.healthStatus);
+        const statuses = cluster.items.map((tr) => tr.health_status ?? tr.healthStatus);
         const worst = statuses.includes("buruk") ? "buruk"
                     : statuses.includes("sedang") ? "sedang"
                     : "baik";
@@ -130,7 +151,32 @@ export default function ClusteredTreeMarkers({ trees, healthColor, ringColor, re
                 map.fitBounds(bounds, { padding: [48, 48], maxZoom: 18 });
               },
             }}
-          />
+          >
+            {/* Tooltip saat disorot. Sebelumnya tidak ada sama sekali: gelembung
+                hanya menampilkan angka, dan satu-satunya cara tahu isinya
+                adalah mengekliknya untuk memperbesar peta. */}
+            <Tooltip direction="top" offset={[0, -18]}>
+              {(() => {
+                const r = ringkasKelompok(cluster.items);
+                return (
+                  <div className="text-xs leading-snug">
+                    <p className="font-bold">{cluster.items.length} {t("map_trees_unit")}</p>
+                    <p>
+                      {["baik", "sedang", "buruk"]
+                        .filter((k) => r.kondisi[k] > 0)
+                        .map((k) => `${r.kondisi[k]} ${t(`health_${k}`).toLowerCase()}`)
+                        .join(" · ")}
+                    </p>
+                    <p className="opacity-70">
+                      {r.jenisTeratas.map(([n, c]) => `${n} ${c}`).join(", ")}
+                      {r.sisaJenis > 0 ? ` +${r.sisaJenis}` : ""}
+                    </p>
+                    <p className="mt-0.5 opacity-60">{t("map_click_to_zoom")}</p>
+                  </div>
+                );
+              })()}
+            </Tooltip>
+          </Marker>
         );
       })}
     </>

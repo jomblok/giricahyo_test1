@@ -156,6 +156,14 @@ export default function TreeMap({ height = 320, showControls = false }) {
           </MapContainer>
         )}
       </ApiState>
+      {/* Keterangan gelembung. Tanpa ini angka di peta tidak menjelaskan
+          dirinya, dan di layar sentuh tidak ada "sorot" untuk memunculkan
+          tooltip — jadi penjelasannya harus tertulis. */}
+      {points.length > 0 && (
+        <p className="px-3 py-2 border-t border-line text-[11px] leading-relaxed text-ink-muted">
+          {t("map_legend")}
+        </p>
+      )}
     </div>
   );
 }
