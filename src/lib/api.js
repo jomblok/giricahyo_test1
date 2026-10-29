@@ -34,11 +34,37 @@ function getToken() {
 }
 
 // Simpan / hapus token
+//
+// Keduanya ikut mengosongkan simpanan GET (lihat dedupedGet). Pergantian
+// akun di peramban yang sama tanpa ini akan menyuguhkan data akun SEBELUMNYA
+// sampai simpanannya kedaluwarsa — admin keluar, petani masuk, lalu petani
+// melihat daftar seluruh petani yang masih tersimpan.
 export function saveToken(token) {
+  lupakanSimpanan();
   localStorage.setItem("gjr_token", token);
 }
 export function clearToken() {
+  lupakanSimpanan();
   localStorage.removeItem("gjr_token");
+  localStorage.removeItem("gjr_user");
+}
+
+// Akun yang sedang login, disimpan supaya halaman bisa tampil tanpa menunggu
+// /auth/me (lihat AuthContext). Isinya sama dengan yang dikembalikan
+// /auth/me — id, nama, email, peran, linked_id — tidak ada rahasia di
+// dalamnya; tokennya sendiri sudah tersimpan di localStorage sejak dulu.
+export function saveUser(user) {
+  localStorage.setItem("gjr_user", JSON.stringify(user));
+}
+export function getSavedUser() {
+  try {
+    const user = JSON.parse(localStorage.getItem("gjr_user"));
+    // Hanya bentuk yang utuh yang dipercaya. Isian rusak atau sisa versi
+    // lama jatuh ke jalur lama: tunggu /auth/me.
+    return user?.id && user?.role ? user : null;
+  } catch {
+    return null;
+  }
 }
 
 import { antrekan, galatJaringan } from "./offlineQueue";
@@ -206,29 +232,97 @@ async function request(method, path, body = null) {
 // petani + sertifikat dikirim untuk satu layar.
 //
 // Di sini kelimanya digabung menjadi SATU request: pemanggil pertama membuat
-// permintaan, sisanya ikut menunggu Promise yang sama. Ini sengaja HANYA
-// menggabungkan yang masih terbang (in-flight), bukan menyimpan cache
-// ber-waktu — jadi tidak ada risiko data basi: siapa pun yang ikut menumpang
-// menerima balasan yang memang akan dia terima juga kalau meminta sendiri.
+// permintaan, sisanya ikut menunggu Promise yang sama.
+//
+// Balasan yang berhasil juga DISIMPAN sebentar (SIMPAN_MS). Penggabungan saja
+// tidak menolong saat pindah menu: setiap halaman memasang AppShell-nya
+// sendiri, sehingga lonceng notifikasi di Topbar ikut lahir ulang dan menarik
+// empat endpoint lagi, dan halaman tujuan menarik ulang data yang baru saja
+// diambil halaman sebelumnya. Terukur di klik Ringkasan → Petani: enam
+// permintaan, empat di antaranya milik lonceng dan mengantre di depan data
+// halamannya. Di server, setiap permintaan yang menyentuh basis data butuh
+// ±1,8 detik.
+//
+// Umur simpanan menentukan perlakuannya:
+//   < SEGAR_MS     langsung dipakai, tidak ada permintaan ke server.
+//   < BASI_MAKS_MS langsung dipakai JUGA, tapi sambil diminta ulang di latar
+//                  belakang; begitu jawabannya tiba, "gjr:simpanan-diperbarui"
+//                  disiarkan dan useApi menyegarkan layarnya sendiri. Halaman
+//                  yang pernah dibuka tampil seketika alih-alih menunggu ±2
+//                  detik, dan angka terbarunya menyusul.
+//   lebih tua      diperlakukan seperti belum pernah diambil.
+//
+// Data basi dibatasi dari dua sisi: setiap perubahan lewat api ini, login,
+// dan logout mengosongkan simpanan seketika; perubahan oleh PENGGUNA LAIN
+// terlihat begitu permintaan latar belakangnya kembali.
+const SEGAR_MS = 30_000;
+const BASI_MAKS_MS = 5 * 60_000;
 const inflight = new Map();
+const simpanan = new Map(); // path -> { kapan, data }
+
+// Naik setiap kali simpanan dikosongkan. Balasan yang diminta SEBELUM
+// pengosongan tidak boleh masuk simpanan begitu tiba sesudahnya — ia memuat
+// keadaan sebelum perubahan, dan akan disajikan sebagai data terbaru.
+let generasi = 0;
+
+export function lupakanSimpanan() {
+  generasi += 1;
+  inflight.clear();
+  simpanan.clear();
+}
 
 function dedupedGet(path) {
-  const pending = inflight.get(path);
-  if (pending) return pending;
+  const ada = simpanan.get(path);
+  const umur = ada ? Date.now() - ada.kapan : Infinity;
 
-  const p = request("GET", path).finally(() => {
-    if (inflight.get(path) === p) inflight.delete(path);
-  });
+  if (umur < SEGAR_MS) return Promise.resolve(ada.data);
+
+  if (umur < BASI_MAKS_MS) {
+    if (!inflight.has(path)) {
+      ambilBaru(path)
+        .then(siarkanPembaruan)
+        // Gagal di latar belakang tidak diumumkan: yang tampil tetap data
+        // terakhir yang berhasil, dan 401 sudah ditangani di request().
+        .catch(() => {});
+    }
+    return Promise.resolve(ada.data);
+  }
+
+  return inflight.get(path) ?? ambilBaru(path);
+}
+
+// Dashboard memperbarui belasan path sekaligus, dan jawabannya tiba hampir
+// bersamaan. Satu siaran untuk satu rombongan, bukan satu per path — setiap
+// siaran membuat semua useApi yang terpasang menjalankan ulang pengambilnya.
+let siaranTertunda = false;
+function siarkanPembaruan() {
+  if (siaranTertunda) return;
+  siaranTertunda = true;
+  setTimeout(() => {
+    siaranTertunda = false;
+    window.dispatchEvent(new CustomEvent("gjr:simpanan-diperbarui"));
+  }, 50);
+}
+
+function ambilBaru(path) {
+  const gen = generasi;
+  const p = request("GET", path)
+    .then((data) => {
+      if (gen === generasi) simpanan.set(path, { kapan: Date.now(), data });
+      return data;
+    })
+    .finally(() => {
+      if (inflight.get(path) === p) inflight.delete(path);
+    });
   inflight.set(path, p);
   return p;
 }
 
-// Setiap perubahan data membatalkan seluruh GET yang sedang terbang, supaya
-// refetch() setelah menyimpan tidak ikut menumpang balasan yang terlanjur
-// diminta SEBELUM perubahan itu terjadi (kalau dibiarkan, layar bisa
-// menampilkan data lama sesaat setelah menyimpan).
+// Setiap perubahan data mengosongkan simpanan dan seluruh GET yang sedang
+// terbang, supaya refetch() setelah menyimpan benar-benar meminta ke server —
+// bukan menerima balasan yang terlanjur diminta SEBELUM perubahan itu terjadi.
 function afterMutation(promise) {
-  return promise.finally(() => inflight.clear());
+  return promise.finally(lupakanSimpanan);
 }
 
 export const api = {

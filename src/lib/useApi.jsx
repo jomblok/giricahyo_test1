@@ -9,7 +9,7 @@
 // - `loading` true selama fetch berlangsung
 // - `error` berisi pesan string jika gagal, null jika sukses
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, startTransition } from "react";
 import { AlertTriangle } from "lucide-react";
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -24,11 +24,22 @@ export function useApi(fetcher, deps = []) {
     setError(null);
     try {
       const result = await fetcher();
-      if (mountedRef.current) setData(result);
+      // Sebagai transition: React boleh memecah render yang dipicu data ini
+      // menjadi potongan kecil dan menyela di antaranya untuk klik atau
+      // ketikan. Tanpa itu, membuka Ringkasan dengan data dari simpanan
+      // merender seluruh isinya dalam satu blok — terukur 64–105 ms di
+      // laptop, dan selama itu halaman tidak bisa disentuh.
+      if (mountedRef.current) {
+        startTransition(() => {
+          setData(result);
+          setLoading(false);
+        });
+      }
     } catch (e) {
-      if (mountedRef.current) setError(e.message || "Gagal memuat data.");
-    } finally {
-      if (mountedRef.current) setLoading(false);
+      if (mountedRef.current) {
+        setError(e.message || "Gagal memuat data.");
+        setLoading(false);
+      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/use-memo
   }, deps);
@@ -38,6 +49,32 @@ export function useApi(fetcher, deps = []) {
     fetch_();
     return () => { mountedRef.current = false; };
   }, [fetch_]);
+
+  // Data yang tampil bisa berasal dari simpanan yang sudah agak lama; api.js
+  // memintanya ulang di latar belakang lalu menyiarkan gjr:simpanan-diperbarui.
+  // Saat itu pengambil dijalankan ulang DIAM-DIAM — tanpa spinner, karena
+  // datanya sudah di layar — dan kali ini ia menerima jawaban terbaru dari
+  // simpanan, tanpa permintaan baru ke server. Jawaban yang tidak berubah
+  // adalah objek yang sama, jadi setData tidak memicu render ulang.
+  const segarkan = useCallback(async () => {
+    try {
+      const result = await fetcher();
+      if (mountedRef.current) {
+        startTransition(() => {
+          setData(result);
+          setError(null);
+        });
+      }
+    } catch {
+      // Gagal menyegarkan tidak menimpa data yang sudah tampil.
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/use-memo
+  }, deps);
+
+  useEffect(() => {
+    window.addEventListener("gjr:simpanan-diperbarui", segarkan);
+    return () => window.removeEventListener("gjr:simpanan-diperbarui", segarkan);
+  }, [segarkan]);
 
   return { data, loading, error, refetch: fetch_ };
 }

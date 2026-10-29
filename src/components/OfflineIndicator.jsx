@@ -12,6 +12,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { WifiOff, UploadCloud, Loader2, CheckCircle2 } from "lucide-react";
 import { daftarAntrean, kirimUlangAntrean } from "../lib/offlineQueue";
+import { lupakanSimpanan } from "../lib/api";
 import { useLanguage } from "../lib/LanguageContext";
 import { useToast } from "../lib/ToastContext";
 
@@ -49,7 +50,12 @@ export default function OfflineIndicator() {
         });
       });
 
-      if (hasil.terkirim) toast.success(`${hasil.terkirim} ${t("queue_sent")}`);
+      // Antrean dikirim dengan fetch langsung, tidak lewat api.post, jadi
+      // simpanan GET tidak ikut kosong dengan sendirinya.
+      if (hasil.terkirim) {
+        lupakanSimpanan();
+        toast.success(`${hasil.terkirim} ${t("queue_sent")}`);
+      }
       // Yang ditolak server DIBERITAHU, tidak dibuang diam-diam: isinya hilang
       // dari antrean, dan pengguna berhak tahu kirimannya tidak diterima.
       if (hasil.ditolak) toast.error(`${hasil.ditolak} ${t("queue_rejected")}`);
