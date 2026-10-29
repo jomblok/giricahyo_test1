@@ -22,7 +22,7 @@ import { treeApi } from "../lib/api";
 import { useLanguage } from "../lib/LanguageContext";
 import CarbonChainCard from "./CarbonChainCard";
 import { formatNumber, formatDate } from "../lib/format";
-import { CHART, AXIS_PROPS, SkeletonChart } from "./ui";
+import { CHART, AXIS_PROPS, ANIMASI_SERI, SkeletonChart } from "./ui";
 
 // Gaya tooltip mengikuti ChartTooltip di TrendCharts — satu tampilan untuk
 // semua grafik, bukan dua yang mirip tapi tidak persis.
@@ -139,6 +139,7 @@ export default function TreeGrowthChart({ treeId, defaultOpen = false }) {
                       />
                       <Tooltip content={<GrowthTooltip t={t} />} />
                       <Line
+                        {...ANIMASI_SERI}
                         type="monotone"
                         dataKey="co2"
                         stroke={CHART.c1}

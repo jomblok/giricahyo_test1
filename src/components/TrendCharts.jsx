@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import {
   ResponsiveContainer, BarChart, Bar, LineChart, Line,
   XAxis, YAxis, Tooltip, CartesianGrid, Legend,
@@ -10,7 +10,7 @@ import { useLanguage } from "../lib/LanguageContext";
 import { usePeriod } from "../lib/PeriodContext";
 import { formatNumber, formatDate } from "../lib/format";
 import DrilldownModal from "./DrilldownModal";
-import { Card, SkeletonChart, EmptyState, HealthBadge, CHART, AXIS_PROPS } from "./ui";
+import { Card, SkeletonChart, EmptyState, HealthBadge, CHART, AXIS_PROPS, ANIMASI_SERI } from "./ui";
 
 // Tooltip membaca SELURUH payload, bukan payload[0] saja — supaya siap untuk
 // mode perbandingan dua periode dan chart bertumpuk.
@@ -88,7 +88,7 @@ function YearDrilldown({ year, onClose }) {
   );
 }
 
-export default function TrendCharts() {
+function TrendCharts() {
   const { t, lang } = useLanguage();
   const { compare, range } = usePeriod();
   const { data: raw, loading, error } = useApi(() => dashboardApi.trend());
@@ -137,8 +137,8 @@ export default function TrendCharts() {
                 <YAxis {...AXIS_PROPS} />
                 <Tooltip cursor={{ fill: "var(--surface-hover)" }} content={<ChartTooltip unit={t("unit_ton")} />} />
                 {compare && <Legend wrapperStyle={{ fontSize: 10, color: "var(--ink-faint)" }} iconType="circle" iconSize={7} />}
-                {compare && <Bar dataKey="prevCo2Ton" name={t("vs_previous")} fill={CHART.grid} radius={[4, 4, 0, 0]} />}
-                <Bar dataKey="totalCo2Ton" name={t("co2_absorbed_ton_year")} fill={CHART.c1} radius={[4, 4, 0, 0]} />
+                {compare && <Bar {...ANIMASI_SERI} dataKey="prevCo2Ton" name={t("vs_previous")} fill={CHART.grid} radius={[4, 4, 0, 0]} />}
+                <Bar {...ANIMASI_SERI} dataKey="totalCo2Ton" name={t("co2_absorbed_ton_year")} fill={CHART.c1} radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
             <p className="text-[10px] text-ink-faint mt-2">{lang === "en" ? "Click a bar to see the trees behind it." : "Klik batang untuk melihat pohon di baliknya."}</p>
@@ -156,10 +156,10 @@ export default function TrendCharts() {
                 <Tooltip cursor={{ stroke: "var(--line-strong)" }} content={<ChartTooltip unit={t("unit_certificate")} />} />
                 {compare && <Legend wrapperStyle={{ fontSize: 10, color: "var(--ink-faint)" }} iconType="circle" iconSize={7} />}
                 {compare && (
-                  <Line dataKey="prevCerts" name={t("vs_previous")} stroke={CHART.axis}
+                  <Line {...ANIMASI_SERI} dataKey="prevCerts" name={t("vs_previous")} stroke={CHART.axis}
                         strokeWidth={1.6} strokeDasharray="4 3" dot={false} />
                 )}
-                <Line dataKey="certificatesSold" name={t("certificates_sold_cumulative")}
+                <Line {...ANIMASI_SERI} dataKey="certificatesSold" name={t("certificates_sold_cumulative")}
                       stroke={CHART.c2} strokeWidth={2.5}
                       dot={{ r: 4, fill: CHART.c2, strokeWidth: 0 }} activeDot={{ r: 6 }} />
               </LineChart>
@@ -172,3 +172,8 @@ export default function TrendCharts() {
     </>
   );
 }
+
+// memo: Ringkasan merender ulang seluruh isinya setiap kali salah satu
+// datanya tiba (terukur: 6 kali per kunjungan). Komponen ini tidak memakai
+// props yang berubah pada saat itu, jadi render ulang tersebut sia-sia.
+export default memo(TrendCharts);

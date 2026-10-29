@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { memo, useState, useMemo } from "react";
 import { Search, TreeDeciduous, Camera, Trash2, HeartPulse, TrendingUp } from "lucide-react";
 import { useApi, ApiState } from "../lib/useApi.jsx";
 import { treeApi } from "../lib/api";
@@ -20,7 +20,7 @@ import TreeGrowthModal from "./TreeGrowthModal";
 // (h2) pada Ringkasan dan Pohon, tapi langsung di bawah judul halaman (h1)
 // pada Pohon Saya milik petani — jadi tingkat judulnya milik pemanggil, bukan
 // patokan tetap. Lihat CardHeader di ui/Card.jsx.
-export default function TreeTable({ trees: propTrees, farmerId, jenisDipilih, onJenisChange, level = 3 }) {
+function TreeTable({ trees: propTrees, farmerId, jenisDipilih, onJenisChange, level = 3 }) {
   const { user } = useAuth();
   const { t } = useLanguage();
   const toast = useToast();
@@ -341,3 +341,8 @@ export default function TreeTable({ trees: propTrees, farmerId, jenisDipilih, on
     </Card>
   );
 }
+
+// memo: Ringkasan merender ulang seluruh isinya setiap kali salah satu
+// datanya tiba (terukur: 6 kali per kunjungan). Komponen ini tidak memakai
+// props yang berubah pada saat itu, jadi render ulang tersebut sia-sia.
+export default memo(TreeTable);

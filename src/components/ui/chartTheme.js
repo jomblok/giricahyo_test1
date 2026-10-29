@@ -27,6 +27,26 @@ export function readVar(name, fallback = "#2f6e51") {
   return v?.trim() || fallback;
 }
 
+// Animasi seri grafik (Line, Bar, Pie) — disebarkan ke setiap seri:
+//   <Line {...ANIMASI_SERI} ... />
+//
+// Bawaan Recharts menganimasikan seri selama 1,5 detik, dan selama itu React
+// merender ulang garis beserta SETIAP titiknya di tiap frame. Terekam di
+// Performance panel saat membuka Ringkasan: ±1,4 detik jalur "Blocking"
+// berisi JavascriptAnimate → StaticCurve → Dots → DotItem berulang-ulang,
+// CPU penuh, dan halaman tersendat saat digulir. 400 ms masih terbaca
+// sebagai gerak, dengan beban sekitar seperempatnya.
+//
+// Pengguna yang meminta gerak dikurangi di setelan perangkatnya tidak
+// mendapat animasi sama sekali — pola yang sama dengan GlowingEffect.
+const kurangiGerak = typeof window !== "undefined"
+  && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+export const ANIMASI_SERI = {
+  isAnimationActive: !kurangiGerak,
+  animationDuration: 400,
+};
+
 export const AXIS_PROPS = {
   tick: { fontSize: 11, fill: CHART.axis },
   axisLine: false,

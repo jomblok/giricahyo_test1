@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { memo, useState, useMemo } from "react";
 import { Users } from "lucide-react";
 import { useApi, ApiState } from "../lib/useApi.jsx";
 import { farmerApi } from "../lib/api";
@@ -7,7 +7,7 @@ import { useLanguage } from "../lib/LanguageContext";
 import FarmerProfileDrawer from "./FarmerProfileDrawer";
 import { Card, CardHeader, EmptyState, SkeletonTable, DataTable } from "./ui";
 
-export default function FarmerTable() {
+function FarmerTable() {
   const { t } = useLanguage();
   const { data: farmers, loading, error } = useApi(() => farmerApi.list());
   const [openFarmerId, setOpenFarmerId] = useState(null);
@@ -63,3 +63,8 @@ export default function FarmerTable() {
     </Card>
   );
 }
+
+// memo: Ringkasan merender ulang seluruh isinya setiap kali salah satu
+// datanya tiba (terukur: 6 kali per kunjungan). Komponen ini tidak memakai
+// props yang berubah pada saat itu, jadi render ulang tersebut sia-sia.
+export default memo(FarmerTable);

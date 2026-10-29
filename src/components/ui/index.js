@@ -13,7 +13,7 @@ export { SectionHeader } from "./SectionHeader";
 export { StatCard } from "./StatCard";
 export { Sparkline } from "./Sparkline";
 export { DataTable } from "./DataTable";
-export { CHART, CHART_SERIES, AXIS_PROPS, readVar } from "./chartTheme";
+export { CHART, CHART_SERIES, AXIS_PROPS, ANIMASI_SERI, readVar } from "./chartTheme";
 export { ConfirmDialog } from "./ConfirmDialog";
 export { Select } from "./Select";
 export { FormStep } from "./FormStep";

@@ -1,4 +1,4 @@
-import { Fragment, useState, useMemo } from "react";
+import { memo, Fragment, useState, useMemo } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { Wallet, ArrowDownToLine, Filter, Calendar, Plus, Pencil, Trash2, FileCheck, ChevronDown } from "lucide-react";
 import DrilldownModal from "./DrilldownModal";
@@ -8,9 +8,9 @@ import { useApi, ApiState } from "../lib/useApi.jsx";
 import { carbonFundApi } from "../lib/api";
 import { formatRupiah, formatDate } from "../lib/format";
 import { useLanguage } from "../lib/LanguageContext";
-import { Card, CardHeader, EmptyState, Skeleton, Badge, IconButton, CHART_SERIES, ConfirmDialog, Select } from "./ui";
+import { Card, CardHeader, EmptyState, Skeleton, Badge, IconButton, CHART_SERIES, ANIMASI_SERI, ConfirmDialog, Select } from "./ui";
 
-export default function CarbonFundSection() {
+function CarbonFundSection() {
   const { t, lang } = useLanguage();
   const toast = useToast();
   const [selectedMonth, setSelectedMonth] = useState("");
@@ -319,6 +319,7 @@ export default function CarbonFundSection() {
                 <ResponsiveContainer width="100%" height={160}>
                   <PieChart>
                     <Pie
+                      {...ANIMASI_SERI}
                       data={byPackage}
                       dataKey="total"
                       nameKey="package"
@@ -489,3 +490,8 @@ export default function CarbonFundSection() {
     </div>
   );
 }
+
+// memo: Ringkasan merender ulang seluruh isinya setiap kali salah satu
+// datanya tiba (terukur: 6 kali per kunjungan). Komponen ini tidak memakai
+// props yang berubah pada saat itu, jadi render ulang tersebut sia-sia.
+export default memo(CarbonFundSection);

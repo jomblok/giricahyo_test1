@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { memo, useMemo, useState, useEffect } from "react";
 // CircleMarker & Popup dulu dipakai langsung di sini; sejak marker dipindah ke
 // ClusteredTreeMarkers, keduanya tinggal import yang menganggur.
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
@@ -30,7 +30,7 @@ function FitToTrees({ points, trigger }) {
   return null;
 }
 
-export default function TreeMap({ height = 320, showControls = false }) {
+function TreeMap({ height = 320, showControls = false }) {
   const { data: trees, loading, error } = useApi(() => treeApi.map());
   const { theme } = useTheme();
   const { t, lang } = useLanguage();
@@ -154,3 +154,8 @@ export default function TreeMap({ height = 320, showControls = false }) {
     </div>
   );
 }
+
+// memo: Ringkasan merender ulang seluruh isinya setiap kali salah satu
+// datanya tiba (terukur: 6 kali per kunjungan). Komponen ini tidak memakai
+// props yang berubah pada saat itu, jadi render ulang tersebut sia-sia.
+export default memo(TreeMap);
