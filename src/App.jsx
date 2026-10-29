@@ -11,6 +11,7 @@ import { useAuth } from "./lib/AuthContext";
 import LoginPage from "./pages/LoginPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import PageFallback from "./components/PageFallback";
+import { HALAMAN } from "./lib/halaman";
 
 // Ketiga dashboard ini dimuat sesuai peran. Sebelumnya ketiganya diimpor
 // serentak, jadi seorang petani ikut mengunduh dashboard admin lengkap dengan
@@ -24,32 +25,32 @@ const BuyerDashboardPage    = lazy(() => import("./pages/BuyerDashboardPage"));
 // Halaman berat dimuat saat dibutuhkan saja: peta (Leaflet), QR, dan kamera
 // tidak perlu ikut bundel awal yang dilihat semua orang saat login.
 const PublicTreePage        = lazy(() => import("./pages/PublicTreePage"));
-const GenerateQrPage        = lazy(() => import("./pages/GenerateQrPage"));
-const BulkQrPage        = lazy(() => import("./pages/BulkQrPage"));
-const NeedsActionPage        = lazy(() => import("./pages/NeedsActionPage"));
-const AuditLogPage        = lazy(() => import("./pages/AuditLogPage"));
-const MeasurementCyclesPage        = lazy(() => import("./pages/MeasurementCyclesPage"));
-const GroupComparisonPage        = lazy(() => import("./pages/GroupComparisonPage"));
-const MyCertificatesSheetPage        = lazy(() => import("./pages/MyCertificatesSheetPage"));
+const GenerateQrPage        = lazy(HALAMAN["/generate-qr"]);
+const BulkQrPage        = lazy(HALAMAN["/qr-massal"]);
+const NeedsActionPage        = lazy(HALAMAN["/perlu-tindakan"]);
+const AuditLogPage        = lazy(HALAMAN["/audit"]);
+const MeasurementCyclesPage        = lazy(HALAMAN["/periode-ukur"]);
+const GroupComparisonPage        = lazy(HALAMAN["/perbandingan"]);
+const MyCertificatesSheetPage        = lazy(HALAMAN["/sertifikat-saya"]);
 const PublicImpactPage        = lazy(() => import("./pages/PublicImpactPage"));
-const ManageCertificatesPage= lazy(() => import("./pages/ManageCertificatesPage"));
-const ManageUsersPage       = lazy(() => import("./pages/ManageUsersPage"));
-const TreesPage             = lazy(() => import("./pages/TreesPage"));
-const SpeciesCatalogPage    = lazy(() => import("./pages/SpeciesCatalogPage"));
-const FarmersPage           = lazy(() => import("./pages/FarmersPage"));
-const MapPage               = lazy(() => import("./pages/MapPage"));
-const MyGardenMapPage               = lazy(() => import("./pages/MyGardenMapPage"));
-const FundTransparencyPage               = lazy(() => import("./pages/FundTransparencyPage"));
-const MeasurementGuidePage               = lazy(() => import("./pages/MeasurementGuidePage"));
-const FundPage              = lazy(() => import("./pages/FundPage"));
-const MyTreesPage           = lazy(() => import("./pages/MyTreesPage"));
-const MySalaryPage          = lazy(() => import("./pages/MySalaryPage"));
-const RegisterTreePage      = lazy(() => import("./pages/RegisterTreePage"));
-const MyReportsPage         = lazy(() => import("./pages/MyReportsPage"));
-const VerifyReportsPage     = lazy(() => import("./pages/VerifyReportsPage"));
-const PrintReportPage       = lazy(() => import("./pages/PrintReportPage"));
-const SupportedTreesPage    = lazy(() => import("./pages/SupportedTreesPage"));
-const MyImpactPage          = lazy(() => import("./pages/MyImpactPage"));
+const ManageCertificatesPage= lazy(HALAMAN["/sertifikat"]);
+const ManageUsersPage       = lazy(HALAMAN["/pengguna"]);
+const TreesPage             = lazy(HALAMAN["/pohon"]);
+const SpeciesCatalogPage    = lazy(HALAMAN["/jenis-pohon"]);
+const FarmersPage           = lazy(HALAMAN["/petani"]);
+const MapPage               = lazy(HALAMAN["/peta"]);
+const MyGardenMapPage               = lazy(HALAMAN["/peta-kebun"]);
+const FundTransparencyPage               = lazy(HALAMAN["/dana-desa"]);
+const MeasurementGuidePage               = lazy(HALAMAN["/cara-ukur"]);
+const FundPage              = lazy(HALAMAN["/dana"]);
+const MyTreesPage           = lazy(HALAMAN["/pohon-saya"]);
+const MySalaryPage          = lazy(HALAMAN["/gaji"]);
+const RegisterTreePage      = lazy(HALAMAN["/daftar-pohon"]);
+const MyReportsPage         = lazy(HALAMAN["/laporan-saya"]);
+const VerifyReportsPage     = lazy(HALAMAN["/laporan"]);
+const PrintReportPage       = lazy(HALAMAN["/laporan-cetak"]);
+const SupportedTreesPage    = lazy(HALAMAN["/dukungan"]);
+const MyImpactPage          = lazy(HALAMAN["/dampak"]);
 
 // Route guard: redirect ke /login kalau belum login
 function PrivateRoute({ children }) {

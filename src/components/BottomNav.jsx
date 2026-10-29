@@ -7,6 +7,7 @@ import { NavLink } from "react-router-dom";
 import { useAuth } from "../lib/AuthContext";
 import { useLanguage } from "../lib/LanguageContext";
 import { bottomNavFor } from "../lib/navConfig";
+import { pramuat } from "../lib/halaman";
 
 export default function BottomNav() {
   const { user } = useAuth();
@@ -27,6 +28,10 @@ export default function BottomNav() {
             key={item.to}
             to={item.to}
             end={item.end}
+            // Sentuhan jari mendahului klik ±100 ms — cukup untuk mulai
+            // mengunduh berkas halamannya (lihat lib/halaman.js).
+            onTouchStart={() => pramuat(item.to)}
+            onMouseEnter={() => pramuat(item.to)}
             className={({ isActive }) =>
               `flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 min-h-14 text-[10px] font-medium transition-colors ${
                 isActive ? "text-brand-ink" : "text-ink-faint"

@@ -8,6 +8,7 @@ import { Leaf, PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
 import { useLanguage } from "../lib/LanguageContext";
 import { useAuth } from "../lib/AuthContext";
 import { navFor } from "../lib/navConfig";
+import { pramuat } from "../lib/halaman";
 import { IconButton } from "./ui";
 import { ModalPortal } from './ui/ModalPortal';
 
@@ -19,6 +20,11 @@ function NavItem({ item, collapsed, onNavigate }) {
       to={item.to}
       end={item.end}
       onClick={onNavigate}
+      // Berkas halamannya mulai diunduh begitu kursor tiba atau menu disentuh
+      // (lihat lib/halaman.js), bukan setelah diklik.
+      onMouseEnter={() => pramuat(item.to)}
+      onFocus={() => pramuat(item.to)}
+      onTouchStart={() => pramuat(item.to)}
       title={collapsed ? label : undefined}
       className={({ isActive }) =>
         [
